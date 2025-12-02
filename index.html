@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>manage edlps (sandbox v5)</title>
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #e4e6eb;
+            margin: 0;
+            padding: 20px;
+            color: #050505;
+            font-size: 13px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        #container {
+            width: fit-content;
+            margin: 0 auto;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        /* --- FILTERS BAR --- */
+        #filter-bar {
+            display: flex;
+            gap: 20px;
+            padding: 10px;
+            background: #f0f2f5;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .filter-section {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            border-right: 1px solid #ccc;
+            padding-right: 15px;
+        }
+        .filter-section:last-child { border-right: none; }
+
+        .filter-master { font-weight: 800; font-size: 0.9em; margin-bottom: 3px; cursor: pointer; }
+        .filter-subs { display: flex; gap: 10px; }
+        .filter-label { font-size: 0.8em; color: #444; display: flex; align-items: center; cursor: pointer; }
+        .filter-label input { margin-right: 4px; }
+
+        /* Search & Actions */
+        .controls-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+
+        #search-bar {
+            flex-grow: 1;
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #000;
+            border-radius: 4px;
+        }
+
+        .btn-save-all {
+            background-color: #1877f2;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
+            white-space: nowrap;
+        }
+        .btn-save-all.visible { display: block; }
+
+        /* Table Styles */
+        table {
+            border-collapse: collapse;
+            width: auto;
+        }
+
+        th {
+            background-color: #f0f2f5;
+            padding: 8px 4px;
+            text-align: center;
+            font-size: 0.75em;
+            text-transform: uppercase;
+            color: #444;
+            border-bottom: 2px solid #000;
+            white-space: nowrap;
+        }
+        
+        td {
+            padding: 2px 4px;
+            border-bottom: 1px solid #ccc;
+            vertical-align: top;
+        }
+
+        /* Hiding Logic */
+        .hide-col { display: none !important; }
+
+        /* Input Fields */
+        input[type="text"], input[type="number"] {
+            width: 50px;
+            padding: 4px 2px;
+            border: 1px solid #000;
+            border-radius: 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: #000;
+            background-color: #fff;
+            text-align: center;
+        }
+        input.input-name { width: 140px; text-align: left; font-weight: normal; }
+        
+        input:focus {
+            background-color: #fff;
+            border: 2px solid #1877f2;
+            outline: none;
+        }
+
+        /* --- ACCORDION ROW BEHAVIOR --- */
+        tr.data-row {
+            cursor: pointer;
+            transition: background-color 0.1s;
+        }
+        tr.data-row:hover { background-color: #f7f8fa; }
+        tr.data-row.active { 
+            background-color: #eef3fc; 
+            border-left: 3px solid #1877f2;
+        }
+
+        /* Hidden Elements (FIXED IN V5) */
+        .row-meta, .row-actions, .name-lock-wrapper { display: none; }
+        
+        tr.active .row-meta { display: block; margin-top: 4px; }
+        tr.active .row-actions { display: flex; gap: 5px; justify-content: center; margin-top: 5px; }
+        tr.active .name-lock-wrapper { display: flex; align-items: center; font-size: 0.75em; color: #1877f2; margin-top: 2px; cursor: pointer; }
+
+        /* Timestamp Styling */
+        .ts-label {
+            font-size: 10px;
+            color: #666;
+            text-align: center;
+            /* Removed display: block to let parent control visibility */
+        }
+        .ts-recent { color: #008000; font-weight: bold; }
+
+        /* Name Field Logic */
+        .name-display { font-weight: bold; padding: 5px 2px; }
+        .name-input-wrapper { display: none; }
+        .name-unlocked .name-display { display: none; }
+        .name-unlocked .name-input-wrapper { display: block; }
+
+        /* Group Headers */
+        .group-att { background-color: #e3f2fd; color: #000; border: 1px solid #999; }
+        .group-vzw { background-color: #ffebee; color: #000; border: 1px solid #999; }
+        .group-tmo { background-color: #fce4ec; color: #000; border: 1px solid #999; }
+
+        /* Icon Buttons */
+        .btn-icon {
+            background: none; border: none; cursor: pointer; font-size: 14px; padding: 5px;
+        }
+        .btn-save-row { color: #1877f2; }
+        .btn-del-row { color: #d93025; }
+
+        /* Add Row Styling */
+        #add-row { background-color: #fff; border-bottom: 2px solid #000; }
+        #add-row input { border: 1px dashed #666; }
+        
+        .sticky-footer {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>manage edlps (sandbox v5)</h1>
+
+    <div id="container">
+        
+        <!-- Filter Bar -->
+        <div id="filter-bar">
+            <!-- ATT Group -->
+            <div class="filter-section">
+                <label class="filter-master"><input type="checkbox" id="m-att" checked> AT&T</label>
+                <div class="filter-subs">
+                    <label class="filter-label"><input type="checkbox" id="cb-att-mo" data-group="att" checked> Mo</label>
+                    <label class="filter-label"><input type="checkbox" id="cb-att-tot" data-group="att" checked> Total</label>
+                </div>
+            </div>
+            <!-- VZW Group -->
+            <div class="filter-section">
+                <label class="filter-master"><input type="checkbox" id="m-vzw" checked> Verizon</label>
+                <div class="filter-subs">
+                    <label class="filter-label"><input type="checkbox" id="cb-vzw-mo" data-group="vzw" checked> Mo</label>
+                    <label class="filter-label"><input type="checkbox" id="cb-vzw-tot" data-group="vzw" checked> Total</label>
+                </div>
+            </div>
+            <!-- TMO Group -->
+            <div class="filter-section">
+                <label class="filter-master"><input type="checkbox" id="m-tmo" checked> T-Mobile</label>
+                <div class="filter-subs">
+                    <label class="filter-label"><input type="checkbox" id="cb-tmo-dp" data-group="tmo" checked> DP</label>
+                    <label class="filter-label"><input type="checkbox" id="cb-tmo-mo" data-group="tmo" checked> Mo</label>
+                    <label class="filter-label"><input type="checkbox" id="cb-tmo-tot" data-group="tmo" checked> Total</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Controls -->
+        <div class="controls-row">
+            <input type="text" id="search-bar" placeholder="Search devices...">
+            <button class="btn-save-all" id="btn-save-top">Save All Changes</button>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="main-table">
+                <thead>
+                    <tr>
+                        <th class="col-name">Device</th>
+                        
+                        <!-- ATT Headers -->
+                        <th class="group-att c-att-mo">$/mo</th>
+                        <th class="group-att c-att-tot">Total</th>
+                        
+                        <!-- VZW Headers -->
+                        <th class="group-vzw c-vzw-mo">$/mo</th>
+                        <th class="group-vzw c-vzw-tot">Total</th>
+                        
+                        <!-- TMO Headers -->
+                        <th class="group-tmo c-tmo-dp">Down</th>
+                        <th class="group-tmo c-tmo-mo">Mo<br><span style="font-size:0.7em; font-weight:normal;">(after dp)</span></th>
+                        <th class="group-tmo c-tmo-tot">Total</th>
+                        
+                        <th class="col-actions" style="width: 40px;"></th>
+                    </tr>
+                    
+                    <!-- Add New Row -->
+                    <tr id="add-row">
+                        <td><input type="text" id="new-name" class="input-name" placeholder="New Device Name"></td>
+                        
+                        <td class="c-att-mo"><input type="number" id="new-att-mo" step="0.01"></td>
+                        <td class="c-att-tot"><input type="number" id="new-att-total"></td>
+                        
+                        <td class="c-vzw-mo"><input type="number" id="new-vzw-mo" step="0.01"></td>
+                        <td class="c-vzw-tot"><input type="number" id="new-vzw-total"></td>
+                        
+                        <td class="c-tmo-dp"><input type="number" id="new-tmo-dp"></td>
+                        <td class="c-tmo-mo"><input type="number" id="new-tmo-mo" step="0.01"></td>
+                        <td class="c-tmo-tot"><input type="number" id="new-tmo-total"></td>
+                        
+                        <td style="text-align:center;"><button id="btn-add-device" class="btn-icon" style="color:green;"><i class="fas fa-plus"></i></button></td>
+                    </tr>
+                </thead>
+                <tbody id="device-list">
+                    <!-- Data Rows -->
+                </tbody>
+            </table>
+            <div id="loading-msg" style="text-align:center; padding:20px; color:#666;">Connecting...</div>
+        </div>
+
+        <!-- Bottom Controls -->
+        <div class="sticky-footer">
+            <button class="btn-save-all" id="btn-save-bottom">Save All Changes</button>
+        </div>
+    </div>
+
+    <!-- Firebase Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue, set, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // --- CONFIG ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDHVW6d6n-lS43mf9DIsSYJjzBWvk4B1R4",
+            authDomain: "optimizer-data.firebaseapp.com",
+            databaseURL: "https://optimizer-data-default-rtdb.firebaseio.com",
+            projectId: "optimizer-data",
+            storageBucket: "optimizer-data.firebasestorage.app",
+            messagingSenderId: "162386405726",
+            appId: "1:162386405726:web:a5f22c3810152949b947cf"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // --- STATE ---
+        let devicesData = {};
+        let dirtyRows = new Set(); 
+
+        // --- DOM ---
+        const deviceListEl = document.getElementById('device-list');
+        const searchBar = document.getElementById('search-bar');
+        const btnSaveTop = document.getElementById('btn-save-top');
+        const btnSaveBottom = document.getElementById('btn-save-bottom');
+
+        // --- FILTER LOGIC ---
+        const colMap = {
+            'cb-att-mo': 'c-att-mo', 'cb-att-tot': 'c-att-tot',
+            'cb-vzw-mo': 'c-vzw-mo', 'cb-vzw-tot': 'c-vzw-tot',
+            'cb-tmo-dp': 'c-tmo-dp', 'cb-tmo-mo': 'c-tmo-mo', 'cb-tmo-tot': 'c-tmo-tot'
+        };
+
+        // Master Toggles
+        ['att', 'vzw', 'tmo'].forEach(carrier => {
+            document.getElementById(`m-${carrier}`).addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                document.querySelectorAll(`input[data-group="${carrier}"]`).forEach(cb => {
+                    cb.checked = isChecked;
+                    toggleCol(colMap[cb.id], isChecked);
+                });
+            });
+        });
+
+        // Individual Toggles
+        Object.keys(colMap).forEach(id => {
+            document.getElementById(id).addEventListener('change', (e) => {
+                toggleCol(colMap[id], e.target.checked);
+            });
+        });
+
+        function toggleCol(className, isVisible) {
+            const cells = document.querySelectorAll('.' + className);
+            cells.forEach(c => c.classList.toggle('hide-col', !isVisible));
+        }
+
+        // --- MATH ---
+        const roundMo = (n) => Math.round((parseFloat(n)||0)*100)/100;
+        const roundTot = (n) => Math.round(parseFloat(n)||0);
+        const calc36_Tot = (m) => roundTot(m*36);
+        const calc36_Mo = (t) => roundMo(t/36);
+        const calcTmo_Mo = (t, d) => roundMo((t-d)/24);
+        const calcTmo_Tot = (m, d) => roundTot(d+(m*24));
+
+        // --- RENDER ---
+        function formatTimestamp(ts) {
+            if (!ts) return '';
+            const d = new Date(ts);
+            const now = new Date();
+            const diff = (now-d)/(1000*60*60);
+            const str = `${d.getMonth()+1}/${d.getDate()}`;
+            if (diff < 72) {
+                const h = d.getHours().toString().padStart(2,'0');
+                const m = d.getMinutes().toString().padStart(2,'0');
+                return `<span class="ts-recent">${str} ${h}:${m}</span>`;
+            }
+            return str;
+        }
+
+        const devicesRef = ref(db, 'devices');
+        onValue(devicesRef, (snapshot) => {
+            document.getElementById('loading-msg').style.display = 'none';
+            devicesData = snapshot.val() || {};
+            dirtyRows.clear();
+            updateSaveAllButtons();
+            renderTable();
+        });
+
+        function renderTable() {
+            deviceListEl.innerHTML = '';
+            const term = searchBar.value.toLowerCase();
+            const keys = Object.keys(devicesData).sort((a,b) => (devicesData[a].name||'').localeCompare(devicesData[b].name||''));
+
+            keys.forEach(key => {
+                const d = devicesData[key];
+                if (term && !d.name.toLowerCase().includes(term)) return;
+
+                const getTs = (c) => c?.last_updated || d.last_updated;
+                const row = document.createElement('tr');
+                row.className = 'data-row';
+                row.dataset.key = key;
+                row.dataset.original = JSON.stringify(d);
+
+                row.innerHTML = `
+                    <td class="col-name">
+                        <div class="name-display">${d.name}</div>
+                        <div class="name-input-wrapper">
+                            <input type="text" class="input-name" value="${d.name}">
+                        </div>
+                        <div class="name-lock-wrapper"><i class="fas fa-lock"></i> &nbsp;Edit Title</div>
+                    </td>
+                    
+                    <td class="c-att-mo"><input type="number" class="i-att-mo" value="${d.att?.monthly||''}" step="0.01"><div class="row-meta ts-label">${formatTimestamp(getTs(d.att))}</div></td>
+                    <td class="c-att-tot"><input type="number" class="i-att-tot" value="${d.att?.total||''}"><div class="row-meta"></div></td>
+                    
+                    <td class="c-vzw-mo"><input type="number" class="i-vzw-mo" value="${d.vzw?.monthly||''}" step="0.01"><div class="row-meta ts-label">${formatTimestamp(getTs(d.vzw))}</div></td>
+                    <td class="c-vzw-tot"><input type="number" class="i-vzw-tot" value="${d.vzw?.total||''}"><div class="row-meta"></div></td>
+                    
+                    <td class="c-tmo-dp"><input type="number" class="i-tmo-dp" value="${d.tmo?.dp||0}"><div class="row-meta"></div></td>
+                    <td class="c-tmo-mo"><input type="number" class="i-tmo-mo" value="${d.tmo?.monthly||''}" step="0.01"><div class="row-meta ts-label">${formatTimestamp(getTs(d.tmo))}</div></td>
+                    <td class="c-tmo-tot"><input type="number" class="i-tmo-tot" value="${d.tmo?.total||''}"><div class="row-meta"></div></td>
+                    
+                    <td class="col-actions">
+                        <div class="row-actions">
+                            <button class="btn-icon btn-save-row"><i class="fas fa-save"></i></button>
+                            <button class="btn-icon btn-del-row"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                `;
+
+                // Handle Active State
+                row.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'INPUT') return;
+                    document.querySelectorAll('tr.active').forEach(r => {
+                        if (r !== row) r.classList.remove('active');
+                    });
+                    row.classList.add('active');
+                });
+
+                // Name Lock Logic
+                const lockBtn = row.querySelector('.name-lock-wrapper');
+                lockBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    row.querySelector('.col-name').classList.add('name-unlocked');
+                });
+
+                attachRowListeners(row, key);
+                deviceListEl.appendChild(row);
+            });
+            
+            Object.keys(colMap).forEach(id => {
+                toggleCol(colMap[id], document.getElementById(id).checked);
+            });
+        }
+
+        function attachRowListeners(row, key) {
+            const inputs = row.querySelectorAll('input');
+            const saveBtn = row.querySelector('.btn-save-row');
+            const delBtn = row.querySelector('.btn-del-row');
+
+            inputs.forEach(inp => {
+                inp.addEventListener('input', (e) => {
+                    dirtyRows.add(key);
+                    updateSaveAllButtons();
+                    
+                    const t = e.target;
+                    // ATT
+                    if (t.classList.contains('i-att-tot')) row.querySelector('.i-att-mo').value = t.value ? calc36_Mo(t.value) : '';
+                    if (t.classList.contains('i-att-mo')) row.querySelector('.i-att-tot').value = t.value ? calc36_Tot(t.value) : '';
+                    // VZW
+                    if (t.classList.contains('i-vzw-tot')) row.querySelector('.i-vzw-mo').value = t.value ? calc36_Mo(t.value) : '';
+                    if (t.classList.contains('i-vzw-mo')) row.querySelector('.i-vzw-tot').value = t.value ? calc36_Tot(t.value) : '';
+                    // TMO
+                    const dpIn = row.querySelector('.i-tmo-dp');
+                    const moIn = row.querySelector('.i-tmo-mo');
+                    const totIn = row.querySelector('.i-tmo-tot');
+                    const dp = parseFloat(dpIn.value)||0;
+                    if (t === totIn) moIn.value = t.value ? calcTmo_Mo(parseFloat(t.value), dp) : '';
+                    if (t === moIn) totIn.value = t.value ? calcTmo_Tot(parseFloat(t.value), dp) : '';
+                    if (t === dpIn) {
+                        if (totIn.value) moIn.value = calcTmo_Mo(parseFloat(totIn.value), dp);
+                        else if (moIn.value) totIn.value = calcTmo_Tot(parseFloat(moIn.value), dp);
+                    }
+                });
+            });
+
+            saveBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                saveRow(row, key);
+            });
+
+            delBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (confirm('Delete?')) remove(ref(db, 'devices/'+key));
+            });
+        }
+
+        function saveRow(row, key) {
+            const orig = JSON.parse(row.dataset.original);
+            const now = Date.now();
+            const curr = {
+                name: row.querySelector('.input-name').value,
+                att: { 
+                    monthly: parseFloat(row.querySelector('.i-att-mo').value)||0, 
+                    total: parseFloat(row.querySelector('.i-att-tot').value)||0,
+                    last_updated: orig.att?.last_updated || orig.last_updated
+                },
+                vzw: { 
+                    monthly: parseFloat(row.querySelector('.i-vzw-mo').value)||0, 
+                    total: parseFloat(row.querySelector('.i-vzw-tot').value)||0,
+                    last_updated: orig.vzw?.last_updated || orig.last_updated
+                },
+                tmo: { 
+                    dp: parseFloat(row.querySelector('.i-tmo-dp').value)||0, 
+                    monthly: parseFloat(row.querySelector('.i-tmo-mo').value)||0, 
+                    total: parseFloat(row.querySelector('.i-tmo-tot').value)||0,
+                    last_updated: orig.tmo?.last_updated || orig.last_updated
+                }
+            };
+
+            if (curr.att.total !== orig.att?.total) curr.att.last_updated = now;
+            if (curr.vzw.total !== orig.vzw?.total) curr.vzw.last_updated = now;
+            if (curr.tmo.total !== orig.tmo?.total || curr.tmo.dp !== orig.tmo?.dp) curr.tmo.last_updated = now;
+
+            return update(ref(db, 'devices/'+key), curr);
+        }
+
+        function updateSaveAllButtons() {
+            const hasDirty = dirtyRows.size > 0;
+            btnSaveTop.classList.toggle('visible', hasDirty);
+            btnSaveBottom.classList.toggle('visible', hasDirty);
+            btnSaveTop.textContent = `Save ${dirtyRows.size} Changes`;
+            btnSaveBottom.textContent = `Save ${dirtyRows.size} Changes`;
+        }
+
+        const handleBulkSave = () => {
+            dirtyRows.forEach(key => {
+                const row = document.querySelector(`tr[data-key="${key}"]`);
+                if (row) saveRow(row, key);
+            });
+            dirtyRows.clear();
+            updateSaveAllButtons();
+        };
+
+        btnSaveTop.addEventListener('click', handleBulkSave);
+        btnSaveBottom.addEventListener('click', handleBulkSave);
+
+        const addRow = document.getElementById('add-row');
+        const addInputs = addRow.querySelectorAll('input');
+        
+        addRow.addEventListener('input', (e) => {
+             const t = e.target;
+             if (t.id === 'new-att-total') document.getElementById('new-att-mo').value = calc36_Mo(t.value);
+             if (t.id === 'new-att-mo') document.getElementById('new-att-total').value = calc36_Tot(t.value);
+             if (t.id === 'new-vzw-total') document.getElementById('new-vzw-mo').value = calc36_Mo(t.value);
+             if (t.id === 'new-vzw-mo') document.getElementById('new-vzw-total').value = calc36_Tot(t.value);
+             const dp = parseFloat(document.getElementById('new-tmo-dp').value)||0;
+             if (t.id === 'new-tmo-total') document.getElementById('new-tmo-mo').value = calcTmo_Mo(t.value, dp);
+             if (t.id === 'new-tmo-mo') document.getElementById('new-tmo-total').value = calcTmo_Tot(t.value, dp);
+        });
+
+        document.getElementById('btn-add-device').addEventListener('click', () => {
+            const name = document.getElementById('new-name').value;
+            if (!name) return alert("Required");
+            const key = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const now = Date.now();
+            set(ref(db, 'devices/'+key), {
+                name: name,
+                att: { monthly: parseFloat(document.getElementById('new-att-mo').value)||0, total: parseFloat(document.getElementById('new-att-total').value)||0, last_updated: now },
+                vzw: { monthly: parseFloat(document.getElementById('new-vzw-mo').value)||0, total: parseFloat(document.getElementById('new-vzw-total').value)||0, last_updated: now },
+                tmo: { dp: parseFloat(document.getElementById('new-tmo-dp').value)||0, monthly: parseFloat(document.getElementById('new-tmo-mo').value)||0, total: parseFloat(document.getElementById('new-tmo-total').value)||0, last_updated: now },
+                last_updated: now
+            }).then(() => addInputs.forEach(i => i.value = ''));
+        });
+
+        searchBar.addEventListener('input', renderTable);
+
+    </script>
+</body>
+</html>

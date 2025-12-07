@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>installment manager (sandbox v6)</title>
+    <title>Installment Manager (Beta v9)</title>
     
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -154,7 +154,7 @@
         .row-meta, .row-actions, .name-lock-wrapper { display: none !important; }
         
         tr.active .row-meta { display: block !important; margin-top: 4px; }
-        tr.active .row-actions { display: flex !important; gap: 5px; justify-content: center; margin-top: 5px; }
+        tr.active .row-actions { display: flex !important; gap: 10px; justify-content: center; margin-top: 5px; align-items: center; }
         tr.active .name-lock-wrapper { display: flex !important; align-items: center; font-size: 0.75em; color: #1877f2; margin-top: 2px; cursor: pointer; }
 
         /* Timestamp Styling */
@@ -171,22 +171,26 @@
         .name-unlocked .name-display { display: none; }
         .name-unlocked .name-input-wrapper { display: block; }
 
-        /* Group Headers */
-        .group-att { background-color: #e3f2fd; color: #000; border: 1px solid #999; }
-        .group-vzw { background-color: #ffebee; color: #000; border: 1px solid #999; }
-        .group-tmo { background-color: #fce4ec; color: #000; border: 1px solid #999; }
+        /* Group Headers & Colors (Updated v7) */
+        .group-att { background-color: #87CEEB; color: #000; border: 1px solid #999; }
+        .group-vzw { background-color: #ff6161; color: #000; border: 1px solid #999; }
+        .group-tmo { background-color: #ff61b3; color: #000; border: 1px solid #999; }
 
         /* Danger Zone (TMO Red Column) */
-        .danger-header { background-color: #ffebee !important; color: #d93025 !important; font-weight: 900 !important; border-bottom: 2px solid #d93025; }
-        input.input-danger { border: 1px solid #d93025; background-color: #fff5f5; color: #d93025; }
-        input.input-danger:focus { border: 2px solid #d93025; }
+        .danger-header { background-color: #ff61b3 !important; color: #000 !important; border-bottom: 2px solid #d93025; }
+        input.input-danger { border: 1px solid #ff0303; background-color: #000 !important; color: #ff0303 !important; }
+        input.input-danger:focus { border: 2px solid #ff0303; }
 
-        /* Icon Buttons */
+        /* Icon Buttons (Mobile Optimized v7) */
         .btn-icon {
-            background: none; border: none; cursor: pointer; font-size: 14px; padding: 5px;
+            background: none; border: none; cursor: pointer; 
+            font-size: 18px; /* Larger icon */
+            padding: 0 10px; /* Wider touch target */
+            display: inline-flex;
+            align-items: center;
+            height: 100%;
         }
         .btn-save-row { color: #1877f2; }
-        .btn-verify-row { color: #42b72a; }
         .btn-del-row { color: #d93025; }
 
         /* Add Row Styling */
@@ -200,23 +204,51 @@
             padding-top: 10px;
             border-top: 1px solid #ccc;
         }
+
+        /* --- DEVELOPER CONSOLE (v8) --- */
+        #dev-console-wrapper {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 2px dashed #ccc;
+            text-align: left;
+        }
+        #dev-console-container {
+            margin-top: 10px;
+            display: none;
+        }
+        #dev-console-output {
+            background-color: #f5f5f5;
+            border: 1px solid #999;
+            color: #333;
+            font-family: monospace;
+            font-size: 11px;
+            padding: 10px;
+            height: 150px;
+            overflow-y: scroll;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .btn-copy-log {
+            background-color: #606770;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 5px;
+            font-size: 12px;
+        }
+
     </style>
 </head>
 <body>
 
-    <h1>installment manager (sandbox v6)</h1>
+    <h1>Installment Manager (Beta v9)</h1>
 
     <div id="container">
         
         <!-- Filter Bar -->
         <div id="filter-bar">
-            <!-- HKST Toggle -->
-            <div class="filter-section" style="border-right: 2px solid #000;">
-                <label class="filter-label" style="font-weight:bold; color:#000;">
-                    <input type="checkbox" id="cb-hkst"> Show only recent HKST inventory
-                </label>
-            </div>
-
             <!-- ATT Group -->
             <div class="filter-section">
                 <label class="filter-master"><input type="checkbox" id="m-att" checked> AT&T</label>
@@ -238,8 +270,8 @@
                 <label class="filter-master"><input type="checkbox" id="m-tmo" checked> T-Mobile</label>
                 <div class="filter-subs">
                     <label class="filter-label"><input type="checkbox" id="cb-tmo-red" data-group="tmo" checked style="color:#d93025; font-weight:bold;"> NO DP</label>
-                    <label class="filter-label"><input type="checkbox" id="cb-tmo-dp" data-group="tmo" checked> DP</label>
-                    <label class="filter-label"><input type="checkbox" id="cb-tmo-mo" data-group="tmo" checked> Mo</label>
+                    <label class="filter-label"><input type="checkbox" id="cb-tmo-dp" data-group="tmo"> DP</label>
+                    <label class="filter-label"><input type="checkbox" id="cb-tmo-mo" data-group="tmo"> Mo</label>
                     <label class="filter-label"><input type="checkbox" id="cb-tmo-tot" data-group="tmo" checked> Total</label>
                 </div>
             </div>
@@ -278,16 +310,16 @@
                     <tr id="add-row">
                         <td><input type="text" id="new-name" class="input-name" placeholder="New Device Name"></td>
                         
-                        <td class="c-att-mo"><input type="number" id="new-att-mo" step="0.01"></td>
-                        <td class="c-att-tot"><input type="number" id="new-att-total"></td>
+                        <td class="c-att-mo group-att"><input type="number" id="new-att-mo" step="0.01"></td>
+                        <td class="c-att-tot group-att"><input type="number" id="new-att-total"></td>
                         
-                        <td class="c-vzw-mo"><input type="number" id="new-vzw-mo" step="0.01"></td>
-                        <td class="c-vzw-tot"><input type="number" id="new-vzw-total"></td>
+                        <td class="c-vzw-mo group-vzw"><input type="number" id="new-vzw-mo" step="0.01"></td>
+                        <td class="c-vzw-tot group-vzw"><input type="number" id="new-vzw-total"></td>
                         
-                        <td class="c-tmo-red"><input type="number" id="new-tmo-red" class="input-danger" step="0.01"></td>
-                        <td class="c-tmo-dp"><input type="number" id="new-tmo-dp"></td>
-                        <td class="c-tmo-mo"><input type="number" id="new-tmo-mo" step="0.01"></td>
-                        <td class="c-tmo-tot"><input type="number" id="new-tmo-total"></td>
+                        <td class="c-tmo-red group-tmo"><input type="number" id="new-tmo-red" class="input-danger" step="0.01"></td>
+                        <td class="c-tmo-dp group-tmo"><input type="number" id="new-tmo-dp"></td>
+                        <td class="c-tmo-mo group-tmo"><input type="number" id="new-tmo-mo" step="0.01"></td>
+                        <td class="c-tmo-tot group-tmo"><input type="number" id="new-tmo-total"></td>
                         
                         <td style="text-align:center;"><button id="btn-add-device" class="btn-icon" style="color:green;"><i class="fas fa-plus"></i></button></td>
                     </tr>
@@ -303,12 +335,30 @@
         <div class="sticky-footer">
             <button class="btn-save-all" id="btn-save-bottom">Save All Changes</button>
         </div>
+
+        <!-- Developer Console (v8) -->
+        <div id="dev-console-wrapper">
+            <label><input type="checkbox" id="dev-console-toggle"> Show Developer Console</label>
+            <div id="dev-console-container">
+                <pre id="dev-console-output"></pre>
+                <button class="btn-copy-log" id="btn-copy-log">Copy Log</button>
+            </div>
+        </div>
     </div>
 
     <!-- Firebase Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, set, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // --- LOGGER ---
+        function log(msg) {
+            const out = document.getElementById('dev-console-output');
+            const now = new Date();
+            const ts = now.toISOString().split('T')[1].slice(0,-1); // HH:MM:SS.ms
+            out.textContent += `[${ts}] ${msg}\n`;
+            out.scrollTop = out.scrollHeight;
+        }
 
         // --- CONFIG ---
         const firebaseConfig = {
@@ -324,23 +374,53 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // --- HKST INVENTORY LIST ---
-        const HKST_INVENTORY = [
-            "Galaxy A03", "Galaxy A16", "Galaxy S24 FE", "Galaxy S25 FE", "Galaxy S25 Plus", "Galaxy Z Flip 4",
-            "iPhone 15", "iPhone 16 Plus", "iPhone 16 Pro Max", "iPhone 16e", "iPhone Air",
-            "Moto G 5G 2024", "Moto G 5G 2025", "Moto G Power 2025", "One Ace 5G", "TCL Flip 3"
-        ];
-
         // --- STATE ---
         let devicesData = {};
         let dirtyRows = new Set(); 
+        let isSaving = false; // Prevents render clashes during bulk save (v9)
 
         // --- DOM ---
         const deviceListEl = document.getElementById('device-list');
         const searchBar = document.getElementById('search-bar');
         const btnSaveTop = document.getElementById('btn-save-top');
         const btnSaveBottom = document.getElementById('btn-save-bottom');
-        const hkstToggle = document.getElementById('cb-hkst');
+        
+        // Console Toggles
+        const devToggle = document.getElementById('dev-console-toggle');
+        const devContainer = document.getElementById('dev-console-container');
+        devToggle.addEventListener('change', (e) => {
+            devContainer.style.display = e.target.checked ? 'block' : 'none';
+        });
+
+        // Copy Log (Failsafe)
+        document.getElementById('btn-copy-log').addEventListener('click', () => {
+            const text = document.getElementById('dev-console-output').textContent;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text)
+                    .then(() => alert("Log copied to clipboard!"))
+                    .catch(() => legacyCopy(text));
+            } else {
+                legacyCopy(text);
+            }
+        });
+
+        function legacyCopy(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = 0;
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            try {
+                document.execCommand('copy');
+                // Removed alert for v9
+            } catch (err) {
+                alert("Failed to copy log.");
+            }
+            document.body.removeChild(ta);
+        }
+
 
         // --- FILTER LOGIC ---
         const colMap = {
@@ -372,9 +452,6 @@
             cells.forEach(c => c.classList.toggle('hide-col', !isVisible));
         }
 
-        // HKST Toggle
-        hkstToggle.addEventListener('change', renderTable);
-
         // --- MATH ---
         const roundMo = (n) => Math.round((parseFloat(n)||0)*100)/100;
         const roundTot = (n) => Math.round(parseFloat(n)||0);
@@ -384,8 +461,8 @@
         
         const calcTmo_Mo = (t, d) => roundMo((t-d)/24);
         const calcTmo_Tot = (m, d) => roundTot(d+(m*24));
-        const calcTmo_Red = (t) => roundMo(t/24); // Total / 24
-        const calcTmo_TotFromRed = (r) => roundTot(r*24); // Red * 24
+        const calcTmo_Red = (t) => roundMo(t/24); 
+        const calcTmo_TotFromRed = (r) => roundTot(r*24);
 
         // --- RENDER ---
         function formatTimestamp(ts) {
@@ -404,6 +481,12 @@
 
         const devicesRef = ref(db, 'devices');
         onValue(devicesRef, (snapshot) => {
+            if (isSaving) {
+                log('🔥 FIREBASE: Data received, but render skipped (Saving in progress).');
+                devicesData = snapshot.val() || {}; // Keep data fresh, just don't draw
+                return;
+            }
+            log('🔥 FIREBASE: Snapshot received. Re-rendering table.');
             document.getElementById('loading-msg').style.display = 'none';
             devicesData = snapshot.val() || {};
             dirtyRows.clear();
@@ -414,24 +497,14 @@
         function renderTable() {
             deviceListEl.innerHTML = '';
             const term = searchBar.value.toLowerCase();
-            const showHkstOnly = hkstToggle.checked;
             const keys = Object.keys(devicesData).sort((a,b) => (devicesData[a].name||'').localeCompare(devicesData[b].name||''));
 
             keys.forEach(key => {
                 const d = devicesData[key];
                 const nameLower = d.name.toLowerCase();
                 
-                // Filter Logic
-                let isVisible = true;
-                if (term) {
-                    if (!nameLower.includes(term)) isVisible = false; // Search overrides everything
-                } else if (showHkstOnly) {
-                    // Check if name roughly matches HKST list
-                    const matchesHkst = HKST_INVENTORY.some(h => nameLower.includes(h.toLowerCase()));
-                    if (!matchesHkst) isVisible = false;
-                }
-
-                if (!isVisible) return;
+                // Search Filter
+                if (term && !nameLower.includes(term)) return;
 
                 const getTs = (c) => c?.last_updated || d.last_updated;
                 const row = document.createElement('tr');
@@ -443,7 +516,7 @@
                 const tmoTot = parseFloat(d.tmo?.total) || 0;
                 const redVal = tmoTot ? calcTmo_Red(tmoTot) : '';
 
-                // Handle Nulls for Inputs (Empty string if 0/null to show blank)
+                // Handle Nulls for Inputs
                 const val = (v) => (v === 0 || v === "0" || !v) ? "" : v;
 
                 row.innerHTML = `
@@ -455,21 +528,20 @@
                         <div class="name-lock-wrapper"><i class="fas fa-lock"></i> &nbsp;Edit Title</div>
                     </td>
                     
-                    <td class="c-att-mo"><input type="number" class="i-att-mo" value="${val(d.att?.monthly)}" step="0.01"><div class="row-meta ts-label">${formatTimestamp(getTs(d.att))}</div></td>
-                    <td class="c-att-tot"><input type="number" class="i-att-tot" value="${val(d.att?.total)}"><div class="row-meta"></div></td>
+                    <td class="c-att-mo group-att"><input type="number" class="i-att-mo" value="${val(d.att?.monthly)}" step="0.01"><div class="row-meta ts-label">${formatTimestamp(getTs(d.att))}</div></td>
+                    <td class="c-att-tot group-att"><input type="number" class="i-att-tot" value="${val(d.att?.total)}"><div class="row-meta"></div></td>
                     
-                    <td class="c-vzw-mo"><input type="number" class="i-vzw-mo" value="${val(d.vzw?.monthly)}" step="0.01"><div class="row-meta ts-label">${formatTimestamp(getTs(d.vzw))}</div></td>
-                    <td class="c-vzw-tot"><input type="number" class="i-vzw-tot" value="${val(d.vzw?.total)}"><div class="row-meta"></div></td>
+                    <td class="c-vzw-mo group-vzw"><input type="number" class="i-vzw-mo" value="${val(d.vzw?.monthly)}" step="0.01"><div class="row-meta ts-label">${formatTimestamp(getTs(d.vzw))}</div></td>
+                    <td class="c-vzw-tot group-vzw"><input type="number" class="i-vzw-tot" value="${val(d.vzw?.total)}"><div class="row-meta"></div></td>
                     
-                    <td class="c-tmo-red"><input type="number" class="i-tmo-red input-danger" value="${val(redVal)}" step="0.01"><div class="row-meta"></div></td>
-                    <td class="c-tmo-dp"><input type="number" class="i-tmo-dp" value="${val(d.tmo?.dp)}"><div class="row-meta"></div></td>
-                    <td class="c-tmo-mo"><input type="number" class="i-tmo-mo" value="${val(d.tmo?.monthly)}" step="0.01"><div class="row-meta ts-label">${formatTimestamp(getTs(d.tmo))}</div></td>
-                    <td class="c-tmo-tot"><input type="number" class="i-tmo-tot" value="${val(d.tmo?.total)}"><div class="row-meta"></div></td>
+                    <td class="c-tmo-red group-tmo"><input type="number" class="i-tmo-red input-danger" value="${val(redVal)}" step="0.01"><div class="row-meta"></div></td>
+                    <td class="c-tmo-dp group-tmo"><input type="number" class="i-tmo-dp" value="${val(d.tmo?.dp)}"><div class="row-meta"></div></td>
+                    <td class="c-tmo-mo group-tmo"><input type="number" class="i-tmo-mo" value="${val(d.tmo?.monthly)}" step="0.01"><div class="row-meta ts-label">${formatTimestamp(getTs(d.tmo))}</div></td>
+                    <td class="c-tmo-tot group-tmo"><input type="number" class="i-tmo-tot" value="${val(d.tmo?.total)}"><div class="row-meta"></div></td>
                     
                     <td class="col-actions">
                         <div class="row-actions">
-                            <button class="btn-icon btn-save-row" title="Save"><i class="fas fa-save"></i></button>
-                            <button class="btn-icon btn-verify-row" title="Verify (Update Timestamp)"><i class="fas fa-check-circle"></i></button>
+                            <button class="btn-icon btn-save-row" title="Save & Verify"><i class="fas fa-save"></i></button>
                             <button class="btn-icon btn-del-row" title="Delete"><i class="fas fa-trash"></i></button>
                         </div>
                     </td>
@@ -501,11 +573,13 @@
         function attachRowListeners(row, key) {
             const inputs = row.querySelectorAll('input');
             const saveBtn = row.querySelector('.btn-save-row');
-            const verifyBtn = row.querySelector('.btn-verify-row');
             const delBtn = row.querySelector('.btn-del-row');
 
             inputs.forEach(inp => {
                 inp.addEventListener('input', (e) => {
+                    if (!dirtyRows.has(key)) {
+                        log(`✏️ EDIT: Row '${key}' marked dirty.`);
+                    }
                     dirtyRows.add(key);
                     updateSaveAllButtons();
                     
@@ -517,7 +591,7 @@
                     if (t.classList.contains('i-vzw-tot')) row.querySelector('.i-vzw-mo').value = t.value ? calc36_Mo(t.value) : '';
                     if (t.classList.contains('i-vzw-mo')) row.querySelector('.i-vzw-tot').value = t.value ? calc36_Tot(t.value) : '';
                     
-                    // TMO Logic with Red Column
+                    // TMO Logic
                     const redIn = row.querySelector('.i-tmo-red');
                     const dpIn = row.querySelector('.i-tmo-dp');
                     const moIn = row.querySelector('.i-tmo-mo');
@@ -525,52 +599,36 @@
                     const dp = parseFloat(dpIn.value)||0;
 
                     if (t === redIn) {
-                        // Red changed -> Update Total -> Update Mo
                         const tot = t.value ? calcTmo_TotFromRed(t.value) : '';
                         totIn.value = tot;
                         moIn.value = tot ? calcTmo_Mo(tot, dp) : '';
                     }
                     if (t === totIn) {
-                        // Total changed -> Update Mo & Red
                         const tot = parseFloat(t.value);
                         moIn.value = t.value ? calcTmo_Mo(tot, dp) : '';
                         redIn.value = t.value ? calcTmo_Red(tot) : '';
                     }
                     if (t === moIn) {
-                        // Mo changed -> Update Total & Red
                         const mo = parseFloat(t.value);
                         const tot = t.value ? calcTmo_Tot(mo, dp) : '';
                         totIn.value = tot;
                         redIn.value = tot ? calcTmo_Red(tot) : '';
                     }
                     if (t === dpIn) {
-                        // DP changed -> Recalc Mo based on Total (Anchor)
                         const tot = parseFloat(totIn.value);
-                        if (tot) {
-                            moIn.value = calcTmo_Mo(tot, dp);
-                        }
+                        if (tot) moIn.value = calcTmo_Mo(tot, dp);
                     }
                 });
             });
 
-            // SAVE
-            saveBtn.addEventListener('click', (e) => { e.stopPropagation(); saveRow(row, key); });
-
-            // VERIFY (Green Check)
-            verifyBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                // Just update timestamps to NOW, keep data same
-                const orig = JSON.parse(row.dataset.original);
-                const now = Date.now();
-                const curr = { ...orig }; // Shallow copy
-                // Ensure objects exist
-                if (!curr.att) curr.att = {}; if (!curr.vzw) curr.vzw = {}; if (!curr.tmo) curr.tmo = {};
-                
-                curr.att.last_updated = now;
-                curr.vzw.last_updated = now;
-                curr.tmo.last_updated = now;
-                
-                update(ref(db, 'devices/'+key), curr).catch(e => alert(e.message));
+            // SAVE (Single)
+            saveBtn.addEventListener('click', (e) => { 
+                e.stopPropagation(); 
+                const data = scrapeRowData(row, key);
+                sendRowData(key, data).then(() => {
+                    dirtyRows.delete(key);
+                    updateSaveAllButtons();
+                });
             });
 
             // DELETE
@@ -580,37 +638,35 @@
             });
         }
 
-        function saveRow(row, key) {
-            const orig = JSON.parse(row.dataset.original);
-            const now = Date.now();
-            
-            // Helper to get float or 0 (but keep nulls for saving?) 
-            // Actually for saving, 0 is fine, UI handles blanking on render
+        // Helper: Read DOM to get data (Sync)
+        function scrapeRowData(row, key) {
             const getVal = (sel) => parseFloat(row.querySelector(sel).value) || 0;
             const getName = () => row.querySelector('.input-name').value;
+            const now = Date.now();
 
-            const curr = {
+            return {
                 name: getName(),
                 att: { 
                     monthly: getVal('.i-att-mo'), total: getVal('.i-att-tot'),
-                    last_updated: orig.att?.last_updated || orig.last_updated
+                    last_updated: now 
                 },
                 vzw: { 
                     monthly: getVal('.i-vzw-mo'), total: getVal('.i-vzw-tot'),
-                    last_updated: orig.vzw?.last_updated || orig.last_updated
+                    last_updated: now 
                 },
                 tmo: { 
                     dp: getVal('.i-tmo-dp'), monthly: getVal('.i-tmo-mo'), total: getVal('.i-tmo-tot'),
-                    last_updated: orig.tmo?.last_updated || original.last_updated
+                    last_updated: now 
                 }
             };
+        }
 
-            // Timestamp Check
-            if (curr.att.total !== (orig.att?.total||0)) curr.att.last_updated = now;
-            if (curr.vzw.total !== (orig.vzw?.total||0)) curr.vzw.last_updated = now;
-            if (curr.tmo.total !== (orig.tmo?.total||0) || curr.tmo.dp !== (orig.tmo?.dp||0)) curr.tmo.last_updated = now;
-
-            return update(ref(db, 'devices/'+key), curr);
+        // Helper: Send data to Firebase (Async)
+        function sendRowData(key, data) {
+            log(`⬆️ SENDING: Update for ${data.name} (${key})...`);
+            return update(ref(db, 'devices/'+key), data)
+                .then(() => log(`✅ SAVED: ${data.name}`))
+                .catch(err => log(`❌ ERROR: ${data.name} - ${err.message}`));
         }
 
         function updateSaveAllButtons() {
@@ -621,13 +677,34 @@
             btnSaveBottom.textContent = `Save ${dirtyRows.size} Changes`;
         }
 
+        // Bulk Save (Beta v9 Logic)
         const handleBulkSave = () => {
+            log(`💾 BULK SAVE: Processing ${dirtyRows.size} rows.`);
+            isSaving = true; // Lock UI updates
+            
+            // Phase 1: Scrape
+            const updates = [];
             dirtyRows.forEach(key => {
                 const row = document.querySelector(`tr[data-key="${key}"]`);
-                if (row) saveRow(row, key);
+                if (row) {
+                    const data = scrapeRowData(row, key);
+                    updates.push({ key, data });
+                } else {
+                    log(`⚠️ WARNING: Could not find DOM row for ${key} during scrape.`);
+                }
             });
-            dirtyRows.clear();
-            updateSaveAllButtons();
+
+            // Phase 2: Send
+            const promises = updates.map(item => sendRowData(item.key, item.data));
+            
+            // Phase 3: Resolve
+            Promise.all(promises).then(() => {
+                log('✅ BULK SAVE COMPLETE: All promises resolved.');
+                dirtyRows.clear();
+                isSaving = false; // Unlock UI
+                updateSaveAllButtons();
+                renderTable(); // Force final fresh render
+            });
         };
 
         btnSaveTop.addEventListener('click', handleBulkSave);
@@ -671,13 +748,18 @@
             if (!name) return alert("Required");
             const key = name.toLowerCase().replace(/[^a-z0-9]/g, '');
             const now = Date.now();
+            
+            log(`⬆️ ADDING: New Device ${name}...`);
             set(ref(db, 'devices/'+key), {
                 name: name,
                 att: { monthly: parseFloat(document.getElementById('new-att-mo').value)||0, total: parseFloat(document.getElementById('new-att-total').value)||0, last_updated: now },
                 vzw: { monthly: parseFloat(document.getElementById('new-vzw-mo').value)||0, total: parseFloat(document.getElementById('new-vzw-total').value)||0, last_updated: now },
                 tmo: { dp: parseFloat(document.getElementById('new-tmo-dp').value)||0, monthly: parseFloat(document.getElementById('new-tmo-mo').value)||0, total: parseFloat(document.getElementById('new-tmo-total').value)||0, last_updated: now },
                 last_updated: now
-            }).then(() => addInputs.forEach(i => i.value = ''));
+            }).then(() => {
+                log('✅ ADDED: New device created.');
+                addInputs.forEach(i => i.value = '');
+            });
         });
 
         searchBar.addEventListener('input', renderTable);

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Installment Manager (Beta v9)</title>
+    <title>Installment Manager (Beta v17)</title>
     
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -27,6 +27,7 @@
 
         #container {
             width: fit-content;
+            min-width: 900px;
             margin: 0 auto;
             background: white;
             padding: 15px;
@@ -44,8 +45,9 @@
             border-radius: 6px;
             margin-bottom: 15px;
             border: 1px solid #ccc;
-            flex-wrap: wrap;
-            justify-content: center;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            justify-content: flex-start;
         }
         
         .filter-section {
@@ -54,6 +56,7 @@
             gap: 5px;
             border-right: 1px solid #ccc;
             padding-right: 15px;
+            white-space: nowrap;
         }
         .filter-section:last-child { border-right: none; }
 
@@ -120,6 +123,13 @@
         .hide-row { display: none !important; }
 
         /* Input Fields */
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: stretch; /* v17: Match height */
+            width: 100%;
+        }
+
         input[type="text"], input[type="number"] {
             width: 50px;
             padding: 4px 2px;
@@ -137,7 +147,59 @@
             background-color: #fff;
             border: 2px solid #1877f2;
             outline: none;
+            z-index: 2; /* Bring above neighbors */
         }
+
+        /* v17: Lock Button Styling */
+        .btn-lock {
+            background-color: #f0f2f5;
+            border: 1px solid #000;
+            border-left: none; /* Merge with input */
+            color: #ccc; /* Default Gray */
+            width: 30px; /* Wide touch target */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 11px;
+            transition: background 0.1s;
+        }
+        
+        .btn-lock:hover { background-color: #e4e6eb; color: #666; }
+        
+        .btn-lock.locked {
+            color: #000; /* Black when locked */
+            background-color: #d1d1d1;
+        }
+
+        .btn-lock.disabled {
+            pointer-events: none;
+            opacity: 0.5;
+            background-color: #e0e0e0;
+        }
+
+        /* TMO Inputs with Lock Attached */
+        .group-tmo input[type="number"] {
+            border-right: none; /* Merge with lock */
+        }
+
+        /* v16: Incompatible Items */
+        .input-disabled {
+            background-color: #e0e0e0 !important;
+            color: #999 !important;
+            border-color: #ccc !important;
+            pointer-events: none;
+        }
+
+        /* v16: Warning Icon */
+        .icon-warn {
+            color: #d93025;
+            font-size: 12px;
+            margin-left: 6px;
+            align-self: center;
+            display: none; 
+        }
+        .icon-warn.visible { display: inline-block; }
 
         /* --- ACCORDION ROW BEHAVIOR --- */
         tr.data-row {
@@ -171,7 +233,7 @@
         .name-unlocked .name-display { display: none; }
         .name-unlocked .name-input-wrapper { display: block; }
 
-        /* Group Headers & Colors (Updated v7) */
+        /* Group Headers */
         .group-att { background-color: #87CEEB; color: #000; border: 1px solid #999; }
         .group-vzw { background-color: #ff6161; color: #000; border: 1px solid #999; }
         .group-tmo { background-color: #ff61b3; color: #000; border: 1px solid #999; }
@@ -181,14 +243,11 @@
         input.input-danger { border: 1px solid #ff0303; background-color: #000 !important; color: #ff0303 !important; }
         input.input-danger:focus { border: 2px solid #ff0303; }
 
-        /* Icon Buttons (Mobile Optimized v7) */
+        /* Icon Buttons */
         .btn-icon {
             background: none; border: none; cursor: pointer; 
-            font-size: 18px; /* Larger icon */
-            padding: 0 10px; /* Wider touch target */
-            display: inline-flex;
-            align-items: center;
-            height: 100%;
+            font-size: 18px; padding: 0 10px; display: inline-flex;
+            align-items: center; height: 100%;
         }
         .btn-save-row { color: #1877f2; }
         .btn-del-row { color: #d93025; }
@@ -205,50 +264,41 @@
             border-top: 1px solid #ccc;
         }
 
-        /* --- DEVELOPER CONSOLE (v8) --- */
+        /* Developer Console */
         #dev-console-wrapper {
             margin-top: 30px;
             padding-top: 15px;
             border-top: 2px dashed #ccc;
             text-align: left;
         }
-        #dev-console-container {
-            margin-top: 10px;
-            display: none;
-        }
+        #dev-console-container { margin-top: 10px; display: none; }
         #dev-console-output {
-            background-color: #f5f5f5;
-            border: 1px solid #999;
-            color: #333;
-            font-family: monospace;
-            font-size: 11px;
-            padding: 10px;
-            height: 150px;
-            overflow-y: scroll;
-            white-space: pre-wrap;
-            word-wrap: break-word;
+            background-color: #f5f5f5; border: 1px solid #999; color: #333;
+            font-family: monospace; font-size: 11px; padding: 10px;
+            height: 150px; overflow-y: scroll; white-space: pre-wrap; word-wrap: break-word;
         }
         .btn-copy-log {
-            background-color: #606770;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 5px;
-            font-size: 12px;
+            background-color: #606770; color: white; border: none;
+            padding: 5px 10px; border-radius: 4px; cursor: pointer;
+            margin-top: 5px; font-size: 12px;
         }
-
     </style>
 </head>
 <body>
 
-    <h1>Installment Manager (Beta v9)</h1>
+    <h1>Installment Manager (Beta v17)</h1>
 
     <div id="container">
         
         <!-- Filter Bar -->
         <div id="filter-bar">
+            <!-- TMO Incompatible Toggle (v17) -->
+            <div class="filter-section" style="border-right: 2px solid #000;">
+                <label class="filter-label" style="font-weight:bold; color:#d93025;">
+                    <input type="checkbox" id="cb-incompatible"> Edit and show incompatible items
+                </label>
+            </div>
+
             <!-- ATT Group -->
             <div class="filter-section">
                 <label class="filter-master"><input type="checkbox" id="m-att" checked> AT&T</label>
@@ -336,7 +386,7 @@
             <button class="btn-save-all" id="btn-save-bottom">Save All Changes</button>
         </div>
 
-        <!-- Developer Console (v8) -->
+        <!-- Developer Console -->
         <div id="dev-console-wrapper">
             <label><input type="checkbox" id="dev-console-toggle"> Show Developer Console</label>
             <div id="dev-console-container">
@@ -355,7 +405,7 @@
         function log(msg) {
             const out = document.getElementById('dev-console-output');
             const now = new Date();
-            const ts = now.toISOString().split('T')[1].slice(0,-1); // HH:MM:SS.ms
+            const ts = now.toISOString().split('T')[1].slice(0,-1); 
             out.textContent += `[${ts}] ${msg}\n`;
             out.scrollTop = out.scrollHeight;
         }
@@ -377,13 +427,22 @@
         // --- STATE ---
         let devicesData = {};
         let dirtyRows = new Set(); 
-        let isSaving = false; // Prevents render clashes during bulk save (v9)
+        let isSaving = false;
+
+        // v17: Compatibility List (Regex for Galaxy S Series + Extras)
+        const TMO_EXCLUDED = [
+            /Galaxy S\d+/i,
+            /One Ace 5G/i,
+            /Z Flip 4/i,
+            /Galaxy Z Flip 4/i
+        ];
 
         // --- DOM ---
         const deviceListEl = document.getElementById('device-list');
         const searchBar = document.getElementById('search-bar');
         const btnSaveTop = document.getElementById('btn-save-top');
         const btnSaveBottom = document.getElementById('btn-save-bottom');
+        const incompatibleToggle = document.getElementById('cb-incompatible');
         
         // Console Toggles
         const devToggle = document.getElementById('dev-console-toggle');
@@ -392,35 +451,22 @@
             devContainer.style.display = e.target.checked ? 'block' : 'none';
         });
 
-        // Copy Log (Failsafe)
+        // Copy Log
         document.getElementById('btn-copy-log').addEventListener('click', () => {
             const text = document.getElementById('dev-console-output').textContent;
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(text)
-                    .then(() => alert("Log copied to clipboard!"))
+                    .then(() => alert("Log copied!"))
                     .catch(() => legacyCopy(text));
             } else {
                 legacyCopy(text);
             }
         });
-
         function legacyCopy(text) {
-            const ta = document.createElement('textarea');
-            ta.value = text;
-            ta.style.position = 'fixed';
-            ta.style.opacity = 0;
-            document.body.appendChild(ta);
-            ta.focus();
-            ta.select();
-            try {
-                document.execCommand('copy');
-                // Removed alert for v9
-            } catch (err) {
-                alert("Failed to copy log.");
-            }
-            document.body.removeChild(ta);
+            const ta = document.createElement('textarea'); ta.value = text;
+            ta.style.position = 'fixed'; ta.style.opacity = 0; document.body.appendChild(ta);
+            ta.focus(); ta.select(); try { document.execCommand('copy'); } catch (err) {} document.body.removeChild(ta);
         }
-
 
         // --- FILTER LOGIC ---
         const colMap = {
@@ -437,20 +483,20 @@
                     cb.checked = isChecked;
                     toggleCol(colMap[cb.id], isChecked);
                 });
+                renderTable(); // Re-render for compatibility logic
             });
         });
 
-        // Individual Toggles
         Object.keys(colMap).forEach(id => {
-            document.getElementById(id).addEventListener('change', (e) => {
-                toggleCol(colMap[id], e.target.checked);
-            });
+            document.getElementById(id).addEventListener('change', (e) => toggleCol(colMap[id], e.target.checked));
         });
 
         function toggleCol(className, isVisible) {
             const cells = document.querySelectorAll('.' + className);
             cells.forEach(c => c.classList.toggle('hide-col', !isVisible));
         }
+
+        incompatibleToggle.addEventListener('change', renderTable);
 
         // --- MATH ---
         const roundMo = (n) => Math.round((parseFloat(n)||0)*100)/100;
@@ -482,11 +528,9 @@
         const devicesRef = ref(db, 'devices');
         onValue(devicesRef, (snapshot) => {
             if (isSaving) {
-                log('🔥 FIREBASE: Data received, but render skipped (Saving in progress).');
-                devicesData = snapshot.val() || {}; // Keep data fresh, just don't draw
+                devicesData = snapshot.val() || {}; 
                 return;
             }
-            log('🔥 FIREBASE: Snapshot received. Re-rendering table.');
             document.getElementById('loading-msg').style.display = 'none';
             devicesData = snapshot.val() || {};
             dirtyRows.clear();
@@ -498,13 +542,30 @@
             deviceListEl.innerHTML = '';
             const term = searchBar.value.toLowerCase();
             const keys = Object.keys(devicesData).sort((a,b) => (devicesData[a].name||'').localeCompare(devicesData[b].name||''));
+            
+            // Compatibility State
+            const showIncompatible = incompatibleToggle.checked;
+            const attVisible = document.getElementById('m-att').checked;
+            const vzwVisible = document.getElementById('m-vzw').checked;
 
             keys.forEach(key => {
                 const d = devicesData[key];
                 const nameLower = d.name.toLowerCase();
                 
-                // Search Filter
                 if (term && !nameLower.includes(term)) return;
+
+                // v16: Compatibility Logic
+                const isExcluded = TMO_EXCLUDED.some(regex => regex.test(d.name));
+                let tmoDisabledClass = '';
+                let lockDisabledClass = '';
+
+                if (isExcluded && !showIncompatible) {
+                    if (!attVisible && !vzwVisible) {
+                        return; // Hide row if only TMO selected & incompatible
+                    }
+                    tmoDisabledClass = 'input-disabled'; // Gray out TMO fields
+                    lockDisabledClass = 'disabled'; // Disable lock button
+                }
 
                 const getTs = (c) => c?.last_updated || d.last_updated;
                 const row = document.createElement('tr');
@@ -512,12 +573,12 @@
                 row.dataset.key = key;
                 row.dataset.original = JSON.stringify(d);
 
-                // Initial TMO Red Value Calc (Total / 24)
                 const tmoTot = parseFloat(d.tmo?.total) || 0;
                 const redVal = tmoTot ? calcTmo_Red(tmoTot) : '';
-
-                // Handle Nulls for Inputs
                 const val = (v) => (v === 0 || v === "0" || !v) ? "" : v;
+
+                // Lock Icons HTML
+                const lockIcon = `<div class="btn-lock ${lockDisabledClass}" title="Toggle Lock"><i class="fas fa-lock-open"></i></div>`;
 
                 row.innerHTML = `
                     <td class="col-name">
@@ -534,10 +595,30 @@
                     <td class="c-vzw-mo group-vzw"><input type="number" class="i-vzw-mo" value="${val(d.vzw?.monthly)}" step="0.01"><div class="row-meta ts-label">${formatTimestamp(getTs(d.vzw))}</div></td>
                     <td class="c-vzw-tot group-vzw"><input type="number" class="i-vzw-tot" value="${val(d.vzw?.total)}"><div class="row-meta"></div></td>
                     
-                    <td class="c-tmo-red group-tmo"><input type="number" class="i-tmo-red input-danger" value="${val(redVal)}" step="0.01"><div class="row-meta"></div></td>
-                    <td class="c-tmo-dp group-tmo"><input type="number" class="i-tmo-dp" value="${val(d.tmo?.dp)}"><div class="row-meta"></div></td>
-                    <td class="c-tmo-mo group-tmo"><input type="number" class="i-tmo-mo" value="${val(d.tmo?.monthly)}" step="0.01"><div class="row-meta ts-label">${formatTimestamp(getTs(d.tmo))}</div></td>
-                    <td class="c-tmo-tot group-tmo"><input type="number" class="i-tmo-tot" value="${val(d.tmo?.total)}"><div class="row-meta"></div></td>
+                    <td class="c-tmo-red group-tmo">
+                        <div class="input-wrapper">
+                            <input type="number" class="i-tmo-red input-danger ${tmoDisabledClass}" value="${val(redVal)}" step="0.01">${lockIcon}
+                        </div>
+                        <div class="row-meta"></div>
+                    </td>
+                    <td class="c-tmo-dp group-tmo">
+                        <div class="input-wrapper">
+                            <input type="number" class="i-tmo-dp ${tmoDisabledClass}" value="${val(d.tmo?.dp)}">${lockIcon}
+                        </div>
+                        <div class="row-meta"></div>
+                    </td>
+                    <td class="c-tmo-mo group-tmo">
+                        <div class="input-wrapper">
+                            <input type="number" class="i-tmo-mo ${tmoDisabledClass}" value="${val(d.tmo?.monthly)}" step="0.01">${lockIcon}
+                        </div>
+                        <div class="row-meta ts-label">${formatTimestamp(getTs(d.tmo))}</div>
+                    </td>
+                    <td class="c-tmo-tot group-tmo">
+                        <div class="input-wrapper">
+                            <input type="number" class="i-tmo-tot ${tmoDisabledClass}" value="${val(d.tmo?.total)}">${lockIcon} <i class="fas fa-exclamation-triangle icon-warn" title="Math mismatch"></i>
+                        </div>
+                        <div class="row-meta"></div>
+                    </td>
                     
                     <td class="col-actions">
                         <div class="row-actions">
@@ -547,15 +628,14 @@
                     </td>
                 `;
 
-                // Row Activation (Click or Focus)
+                // Logic setup
                 const activate = () => {
                     document.querySelectorAll('tr.active').forEach(r => r !== row && r.classList.remove('active'));
                     row.classList.add('active');
                 };
-                row.addEventListener('click', (e) => { if(e.target.tagName !== 'INPUT') activate(); });
-                row.addEventListener('focusin', activate); // Activate on tab/click into input
+                row.addEventListener('click', (e) => { if(e.target.tagName !== 'INPUT' && !e.target.classList.contains('btn-lock') && !e.target.parentElement.classList.contains('btn-lock')) activate(); });
+                row.addEventListener('focusin', activate);
 
-                // Name Lock
                 row.querySelector('.name-lock-wrapper').addEventListener('click', (e) => {
                     e.stopPropagation();
                     row.querySelector('.col-name').classList.add('name-unlocked');
@@ -574,54 +654,50 @@
             const inputs = row.querySelectorAll('input');
             const saveBtn = row.querySelector('.btn-save-row');
             const delBtn = row.querySelector('.btn-del-row');
+            const locks = row.querySelectorAll('.btn-lock');
+
+            // Lock Toggle Logic
+            locks.forEach(lock => {
+                lock.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (lock.classList.contains('disabled')) return;
+                    lock.classList.toggle('locked');
+                    const icon = lock.querySelector('i');
+                    if (lock.classList.contains('locked')) {
+                        icon.classList.remove('fa-lock-open');
+                        icon.classList.add('fa-lock');
+                    } else {
+                        icon.classList.remove('fa-lock');
+                        icon.classList.add('fa-lock-open');
+                    }
+                    validateRow(row); // Re-validate on lock change
+                });
+            });
 
             inputs.forEach(inp => {
                 inp.addEventListener('input', (e) => {
-                    if (!dirtyRows.has(key)) {
-                        log(`✏️ EDIT: Row '${key}' marked dirty.`);
-                    }
+                    if (!dirtyRows.has(key)) log(`✏️ EDIT: Row '${key}' marked dirty.`);
                     dirtyRows.add(key);
                     updateSaveAllButtons();
                     
                     const t = e.target;
-                    // ATT
+                    const getV = (el) => parseFloat(el.value) || 0;
+
+                    // Standard ATT/VZW logic
                     if (t.classList.contains('i-att-tot')) row.querySelector('.i-att-mo').value = t.value ? calc36_Mo(t.value) : '';
                     if (t.classList.contains('i-att-mo')) row.querySelector('.i-att-tot').value = t.value ? calc36_Tot(t.value) : '';
-                    // VZW
                     if (t.classList.contains('i-vzw-tot')) row.querySelector('.i-vzw-mo').value = t.value ? calc36_Mo(t.value) : '';
                     if (t.classList.contains('i-vzw-mo')) row.querySelector('.i-vzw-tot').value = t.value ? calc36_Tot(t.value) : '';
                     
-                    // TMO Logic
-                    const redIn = row.querySelector('.i-tmo-red');
-                    const dpIn = row.querySelector('.i-tmo-dp');
-                    const moIn = row.querySelector('.i-tmo-mo');
-                    const totIn = row.querySelector('.i-tmo-tot');
-                    const dp = parseFloat(dpIn.value)||0;
-
-                    if (t === redIn) {
-                        const tot = t.value ? calcTmo_TotFromRed(t.value) : '';
-                        totIn.value = tot;
-                        moIn.value = tot ? calcTmo_Mo(tot, dp) : '';
+                    // TMO Solver Logic (v16)
+                    if (t.className.includes('i-tmo')) {
+                        solveTmoRow(row, t);
                     }
-                    if (t === totIn) {
-                        const tot = parseFloat(t.value);
-                        moIn.value = t.value ? calcTmo_Mo(tot, dp) : '';
-                        redIn.value = t.value ? calcTmo_Red(tot) : '';
-                    }
-                    if (t === moIn) {
-                        const mo = parseFloat(t.value);
-                        const tot = t.value ? calcTmo_Tot(mo, dp) : '';
-                        totIn.value = tot;
-                        redIn.value = tot ? calcTmo_Red(tot) : '';
-                    }
-                    if (t === dpIn) {
-                        const tot = parseFloat(totIn.value);
-                        if (tot) moIn.value = calcTmo_Mo(tot, dp);
-                    }
+                    
+                    validateRow(row);
                 });
             });
 
-            // SAVE (Single)
             saveBtn.addEventListener('click', (e) => { 
                 e.stopPropagation(); 
                 const data = scrapeRowData(row, key);
@@ -631,11 +707,137 @@
                 });
             });
 
-            // DELETE
             delBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (confirm('Delete?')) remove(ref(db, 'devices/'+key));
             });
+            
+            // Initial Validation
+            validateRow(row);
+        }
+
+        // v16 Solver Engine
+        function solveTmoRow(row, triggerInput) {
+            const redIn = row.querySelector('.i-tmo-red');
+            const dpIn = row.querySelector('.i-tmo-dp');
+            const moIn = row.querySelector('.i-tmo-mo');
+            const totIn = row.querySelector('.i-tmo-tot');
+
+            // Check Locks
+            const isLocked = (el) => el.parentElement.querySelector('.btn-lock').classList.contains('locked');
+            const redL = isLocked(redIn);
+            const dpL = isLocked(dpIn);
+            const moL = isLocked(moIn);
+            const totL = isLocked(totIn);
+
+            const getV = (el) => parseFloat(el.value) || 0;
+
+            // Trigger: RED
+            if (triggerInput === redIn) {
+                const val = parseFloat(redIn.value) || 0;
+                if (!totL) totIn.value = val ? calcTmo_TotFromRed(val) : '';
+                // Now behave as if Total changed
+                if (!dpL && !moL) { dpIn.value = ''; moIn.value = ''; }
+                else if (dpL && !moL) {
+                    const tot = getV(totIn); const dp = getV(dpIn);
+                    moIn.value = tot > 0 ? ((tot - dp) / 24).toFixed(2) : '';
+                }
+                else if (moL && !dpL) {
+                    const tot = getV(totIn); const mo = getV(moIn);
+                    dpIn.value = tot > 0 ? (tot - (mo * 24)).toFixed(2) : '';
+                }
+            }
+
+            // Trigger: TOTAL
+            if (triggerInput === totIn) {
+                const val = parseFloat(totIn.value) || 0;
+                if (!redL) redIn.value = val ? calcTmo_Red(val) : '';
+                
+                if (!dpL && !moL) { dpIn.value = ''; moIn.value = ''; }
+                else if (dpL && !moL) {
+                    const dp = getV(dpIn);
+                    moIn.value = val > 0 ? ((val - dp) / 24).toFixed(2) : '';
+                }
+                else if (moL && !dpL) {
+                    const mo = getV(moIn);
+                    dpIn.value = val > 0 ? (val - (mo * 24)).toFixed(2) : '';
+                }
+            }
+
+            // Trigger: DP
+            if (triggerInput === dpIn) {
+                const dp = parseFloat(dpIn.value) || 0;
+                const mo = getV(moIn);
+                const tot = getV(totIn);
+                
+                if (totL) { // Total is Anchor/Locked
+                    if (!moL) moIn.value = tot > 0 ? ((tot - dp) / 24).toFixed(2) : '';
+                } else if (moL) { // Mo is Locked -> Calc Total
+                    const newTot = dp + (mo * 24);
+                    totIn.value = newTot;
+                    if (!redL) redIn.value = calcTmo_Red(newTot);
+                } else {
+                    // Both Unlocked (v15 Logic)
+                    if (mo > 0) { // Forward
+                        const newTot = calcTmo_Tot(mo, dp);
+                        totIn.value = newTot;
+                        if (!redL) redIn.value = calcTmo_Red(newTot);
+                    } else if (tot > 0) { // Backward
+                        const newMo = calcTmo_Mo(tot, dp);
+                        moIn.value = newMo > 0 ? newMo : '';
+                    }
+                }
+            }
+
+            // Trigger: MO
+            if (triggerInput === moIn) {
+                const mo = parseFloat(moIn.value) || 0;
+                const dp = getV(dpIn);
+                const tot = getV(totIn);
+
+                if (totL) { // Total is Anchor/Locked
+                    if (!dpL) dpIn.value = tot > 0 ? (tot - (mo * 24)).toFixed(2) : '';
+                } else if (dpL) { // DP is Locked -> Calc Total
+                    const newTot = dp + (mo * 24);
+                    totIn.value = newTot;
+                    if (!redL) redIn.value = calcTmo_Red(newTot);
+                } else {
+                    // Both Unlocked (v15 Logic)
+                    if (dp > 0) { // Forward
+                        const newTot = calcTmo_Tot(mo, dp);
+                        totIn.value = newTot;
+                        if (!redL) redIn.value = calcTmo_Red(newTot);
+                    } else if (tot > 0) { // Backward
+                        const newDp = tot - (mo * 24);
+                        dpIn.value = newDp > 0 ? Math.round(newDp * 100) / 100 : '';
+                    }
+                }
+            }
+        }
+
+        function validateRow(row) {
+            const getV = (sel) => parseFloat(row.querySelector(sel).value) || 0;
+            const red = getV('.i-tmo-red');
+            const dp = getV('.i-tmo-dp');
+            const mo = getV('.i-tmo-mo');
+            const tot = getV('.i-tmo-tot');
+            const warnIcon = row.querySelector('.icon-warn');
+
+            if (tot === 0) { warnIcon.classList.remove('visible'); return; }
+
+            // Check 1: Total vs Red
+            const redCheck = Math.abs(tot - (red * 24)) > 0.24; // v17 Tolerance
+            // Check 2: Total vs Parts (Only if parts exist)
+            let partsCheck = false;
+            if (dp > 0 || mo > 0) {
+                 partsCheck = Math.abs(tot - (dp + (mo * 24))) > 0.24; // v17 Tolerance
+            }
+
+            if (redCheck || partsCheck) {
+                warnIcon.classList.add('visible');
+            } else {
+                warnIcon.classList.remove('visible');
+            }
         }
 
         // Helper: Read DOM to get data (Sync)
@@ -677,33 +879,24 @@
             btnSaveBottom.textContent = `Save ${dirtyRows.size} Changes`;
         }
 
-        // Bulk Save (Beta v9 Logic)
         const handleBulkSave = () => {
             log(`💾 BULK SAVE: Processing ${dirtyRows.size} rows.`);
-            isSaving = true; // Lock UI updates
-            
-            // Phase 1: Scrape
+            isSaving = true; 
             const updates = [];
             dirtyRows.forEach(key => {
                 const row = document.querySelector(`tr[data-key="${key}"]`);
                 if (row) {
                     const data = scrapeRowData(row, key);
                     updates.push({ key, data });
-                } else {
-                    log(`⚠️ WARNING: Could not find DOM row for ${key} during scrape.`);
                 }
             });
-
-            // Phase 2: Send
             const promises = updates.map(item => sendRowData(item.key, item.data));
-            
-            // Phase 3: Resolve
             Promise.all(promises).then(() => {
-                log('✅ BULK SAVE COMPLETE: All promises resolved.');
+                log('✅ BULK SAVE COMPLETE.');
                 dirtyRows.clear();
-                isSaving = false; // Unlock UI
+                isSaving = false; 
                 updateSaveAllButtons();
-                renderTable(); // Force final fresh render
+                renderTable(); 
             });
         };
 
@@ -721,25 +914,43 @@
              if (t.id === 'new-vzw-total') document.getElementById('new-vzw-mo').value = calc36_Mo(t.value);
              if (t.id === 'new-vzw-mo') document.getElementById('new-vzw-total').value = calc36_Tot(t.value);
              
-             // TMO Add Logic
-             const dp = parseFloat(document.getElementById('new-tmo-dp').value)||0;
-             const red = document.getElementById('new-tmo-red');
-             const tot = document.getElementById('new-tmo-total');
-             const mo = document.getElementById('new-tmo-mo');
+             // TMO Add Logic (Simplified v14 Logic for Add Row)
+             const dpIn = document.getElementById('new-tmo-dp');
+             const redIn = document.getElementById('new-tmo-red');
+             const totIn = document.getElementById('new-tmo-total');
+             const moIn = document.getElementById('new-tmo-mo');
+             
+             const getV = (el) => parseFloat(el.value) || 0;
 
-             if (t === red) {
+             if (t === redIn) {
                  const totalVal = t.value ? calcTmo_TotFromRed(t.value) : '';
-                 tot.value = totalVal;
-                 mo.value = totalVal ? calcTmo_Mo(totalVal, dp) : '';
+                 totIn.value = totalVal;
+                 dpIn.value = ''; moIn.value = '';
              }
-             if (t === tot) {
-                 mo.value = t.value ? calcTmo_Mo(t.value, dp) : '';
-                 red.value = t.value ? calcTmo_Red(t.value) : '';
+             if (t === totIn) {
+                 const tot = parseFloat(t.value);
+                 redIn.value = t.value ? calcTmo_Red(tot) : '';
+                 dpIn.value = ''; moIn.value = '';
              }
-             if (t === mo) {
-                 const totalVal = t.value ? calcTmo_Tot(t.value, dp) : '';
-                 tot.value = totalVal;
-                 red.value = totalVal ? calcTmo_Red(totalVal) : '';
+             if (t === moIn) {
+                 const mo = parseFloat(t.value);
+                 const tot = getV(totIn);
+                 if (tot > 0) {
+                     if (mo > 0) {
+                         const newDp = (tot - (mo * 24));
+                         dpIn.value = newDp !== '' ? Math.round(newDp * 100) / 100 : '';
+                     } else { dpIn.value = ''; }
+                 }
+             }
+             if (t === dpIn) {
+                 const dp = parseFloat(t.value);
+                 const tot = getV(totIn);
+                 if (tot > 0) {
+                     if (dp > 0) {
+                         const newMo = calcTmo_Mo(tot, dp);
+                         moIn.value = newMo;
+                     } else { moIn.value = ''; }
+                 }
              }
         });
 

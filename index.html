@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Installment Manager (Beta v17)</title>
+    <title>Installment Manager (Beta v20.1)</title>
     
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -23,7 +23,20 @@
             margin-bottom: 15px;
             font-weight: 800;
             letter-spacing: -0.5px;
+            position: relative;
         }
+
+        #btn-settings {
+            position: absolute;
+            right: 0;
+            top: 0;
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: #606770;
+            cursor: pointer;
+        }
+        #btn-settings:hover { color: #1877f2; }
 
         #container {
             width: fit-content;
@@ -126,7 +139,7 @@
         .input-wrapper {
             position: relative;
             display: flex;
-            align-items: stretch; /* v17: Match height */
+            align-items: stretch;
             width: 100%;
         }
 
@@ -147,16 +160,16 @@
             background-color: #fff;
             border: 2px solid #1877f2;
             outline: none;
-            z-index: 2; /* Bring above neighbors */
+            z-index: 2;
         }
 
-        /* v17: Lock Button Styling */
+        /* Lock Button Styling */
         .btn-lock {
             background-color: #f0f2f5;
             border: 1px solid #000;
-            border-left: none; /* Merge with input */
-            color: #ccc; /* Default Gray */
-            width: 30px; /* Wide touch target */
+            border-left: none;
+            color: #ccc;
+            width: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -168,7 +181,7 @@
         .btn-lock:hover { background-color: #e4e6eb; color: #666; }
         
         .btn-lock.locked {
-            color: #000; /* Black when locked */
+            color: #000;
             background-color: #d1d1d1;
         }
 
@@ -178,12 +191,10 @@
             background-color: #e0e0e0;
         }
 
-        /* TMO Inputs with Lock Attached */
         .group-tmo input[type="number"] {
-            border-right: none; /* Merge with lock */
+            border-right: none; 
         }
 
-        /* v16: Incompatible Items */
         .input-disabled {
             background-color: #e0e0e0 !important;
             color: #999 !important;
@@ -191,7 +202,6 @@
             pointer-events: none;
         }
 
-        /* v16: Warning Icon */
         .icon-warn {
             color: #d93025;
             font-size: 12px;
@@ -212,38 +222,28 @@
             border-left: 3px solid #1877f2;
         }
 
-        /* Hidden Elements */
         .row-meta, .row-actions, .name-lock-wrapper { display: none !important; }
         
         tr.active .row-meta { display: block !important; margin-top: 4px; }
         tr.active .row-actions { display: flex !important; gap: 10px; justify-content: center; margin-top: 5px; align-items: center; }
         tr.active .name-lock-wrapper { display: flex !important; align-items: center; font-size: 0.75em; color: #1877f2; margin-top: 2px; cursor: pointer; }
 
-        /* Timestamp Styling */
-        .ts-label {
-            font-size: 10px;
-            color: #666;
-            text-align: center;
-        }
+        .ts-label { font-size: 10px; color: #666; text-align: center; }
         .ts-recent { color: #008000; font-weight: bold; }
 
-        /* Name Field Logic */
         .name-display { font-weight: bold; padding: 5px 2px; }
         .name-input-wrapper { display: none; }
         .name-unlocked .name-display { display: none; }
         .name-unlocked .name-input-wrapper { display: block; }
 
-        /* Group Headers */
         .group-att { background-color: #87CEEB; color: #000; border: 1px solid #999; }
         .group-vzw { background-color: #ff6161; color: #000; border: 1px solid #999; }
         .group-tmo { background-color: #ff61b3; color: #000; border: 1px solid #999; }
 
-        /* Danger Zone (TMO Red Column) */
         .danger-header { background-color: #ff61b3 !important; color: #000 !important; border-bottom: 2px solid #d93025; }
         input.input-danger { border: 1px solid #ff0303; background-color: #000 !important; color: #ff0303 !important; }
         input.input-danger:focus { border: 2px solid #ff0303; }
 
-        /* Icon Buttons */
         .btn-icon {
             background: none; border: none; cursor: pointer; 
             font-size: 18px; padding: 0 10px; display: inline-flex;
@@ -252,7 +252,6 @@
         .btn-save-row { color: #1877f2; }
         .btn-del-row { color: #d93025; }
 
-        /* Add Row Styling */
         #add-row { background-color: #fff; border-bottom: 2px solid #000; }
         #add-row input { border: 1px dashed #666; }
         
@@ -266,10 +265,7 @@
 
         /* Developer Console */
         #dev-console-wrapper {
-            margin-top: 30px;
-            padding-top: 15px;
-            border-top: 2px dashed #ccc;
-            text-align: left;
+            margin-top: 30px; padding-top: 15px; border-top: 2px dashed #ccc; text-align: left;
         }
         #dev-console-container { margin-top: 10px; display: none; }
         #dev-console-output {
@@ -282,17 +278,40 @@
             padding: 5px 10px; border-radius: 4px; cursor: pointer;
             margin-top: 5px; font-size: 12px;
         }
+
+        /* Settings Modal */
+        #settings-modal {
+            display: none;
+            position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background-color: #fff; padding: 20px; border-radius: 8px; width: 300px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .modal-header { font-weight: bold; margin-bottom: 15px; font-size: 16px; }
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; font-size: 11px; color: #666; margin-bottom: 4px; }
+        .form-group input { width: 100%; box-sizing: border-box; text-align: left; }
+        .modal-actions { text-align: right; margin-top: 15px; }
+        .btn-modal { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-cancel { background: #e4e6eb; color: #333; margin-right: 5px; }
+        .btn-save-settings { background: #1877f2; color: white; }
+
     </style>
 </head>
 <body>
 
-    <h1>Installment Manager (Beta v17)</h1>
+    <h1>
+        Installment Manager (Beta v20.1)
+        <button id="btn-settings" title="Cloud Settings"><i class="fas fa-cog"></i></button>
+    </h1>
 
     <div id="container">
         
         <!-- Filter Bar -->
         <div id="filter-bar">
-            <!-- TMO Incompatible Toggle (v17) -->
+            <!-- TMO Incompatible Toggle -->
             <div class="filter-section" style="border-right: 2px solid #000;">
                 <label class="filter-label" style="font-weight:bold; color:#d93025;">
                     <input type="checkbox" id="cb-incompatible"> Edit and show incompatible items
@@ -386,7 +405,7 @@
             <button class="btn-save-all" id="btn-save-bottom">Save All Changes</button>
         </div>
 
-        <!-- Developer Console -->
+        <!-- Developer Console (Restored v20.1) -->
         <div id="dev-console-wrapper">
             <label><input type="checkbox" id="dev-console-toggle"> Show Developer Console</label>
             <div id="dev-console-container">
@@ -396,14 +415,42 @@
         </div>
     </div>
 
+    <!-- v18 Settings Modal -->
+    <div id="settings-modal">
+        <div class="modal-content">
+            <div class="modal-header">Cloud Publisher Settings</div>
+            <div class="form-group">
+                <label>GitHub Username</label>
+                <input type="text" id="gh-user" placeholder="e.g. spamfan">
+            </div>
+            <div class="form-group">
+                <label>Repository Name</label>
+                <input type="text" id="gh-repo" placeholder="e.g. optimizerunstable">
+            </div>
+            <div class="form-group">
+                <label>File Path</label>
+                <input type="text" id="gh-path" value="edlp_data.json" readonly>
+            </div>
+            <div class="form-group">
+                <label>Personal Access Token (PAT)</label>
+                <input type="password" id="gh-token" placeholder="ghp_...">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-cancel" id="btn-close-settings">Close</button>
+                <button class="btn-modal btn-save-settings" id="btn-save-gh">Save Credentials</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, set, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue, set, remove, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         // --- LOGGER ---
         function log(msg) {
             const out = document.getElementById('dev-console-output');
+            if (!out) return; // Safety check
             const now = new Date();
             const ts = now.toISOString().split('T')[1].slice(0,-1); 
             out.textContent += `[${ts}] ${msg}\n`;
@@ -427,9 +474,10 @@
         // --- STATE ---
         let devicesData = {};
         let dirtyRows = new Set(); 
+        let dirtyCarriers = {}; // Granular Dirty Tracking
         let isSaving = false;
 
-        // v17: Compatibility List (Regex for Galaxy S Series + Extras)
+        // v17: Compatibility List
         const TMO_EXCLUDED = [
             /Galaxy S\d+/i,
             /One Ace 5G/i,
@@ -444,24 +492,106 @@
         const btnSaveBottom = document.getElementById('btn-save-bottom');
         const incompatibleToggle = document.getElementById('cb-incompatible');
         
-        // Console Toggles
+        // --- SETTINGS LOGIC ---
+        const btnSettings = document.getElementById('btn-settings');
+        const settingsModal = document.getElementById('settings-modal');
+        const btnCloseSettings = document.getElementById('btn-close-settings');
+        const btnSaveGh = document.getElementById('btn-save-gh');
+
+        if (btnSettings) {
+            btnSettings.addEventListener('click', () => {
+                const config = JSON.parse(localStorage.getItem('gh_config') || '{}');
+                document.getElementById('gh-user').value = config.user || 'spamfan';
+                document.getElementById('gh-repo').value = config.repo || 'optimizerunstable'; 
+                document.getElementById('gh-token').value = config.token || '';
+                settingsModal.style.display = 'flex';
+            });
+        }
+
+        if (btnCloseSettings) {
+            btnCloseSettings.addEventListener('click', () => settingsModal.style.display = 'none');
+        }
+
+        if (btnSaveGh) {
+            btnSaveGh.addEventListener('click', () => {
+                const user = document.getElementById('gh-user').value.trim();
+                const repo = document.getElementById('gh-repo').value.trim();
+                const token = document.getElementById('gh-token').value.trim();
+                if (!user || !repo || !token) return alert("All fields required");
+                localStorage.setItem('gh_config', JSON.stringify({ user, repo, token }));
+                settingsModal.style.display = 'none';
+                log("✅ GitHub credentials saved locally.");
+            });
+        }
+
+        // --- GITHUB PUBLISHER ---
+        async function publishToGitHub(data) {
+            const config = JSON.parse(localStorage.getItem('gh_config') || '{}');
+            if (!config.token) {
+                log("⚠️ No GitHub token found. Skipping publish.");
+                return;
+            }
+
+            const url = `https://api.github.com/repos/${config.user}/${config.repo}/contents/edlp_data.json`;
+            const content = btoa(JSON.stringify({ devices: data }, null, 2)); 
+            
+            try {
+                // 1. Get SHA
+                const getReq = await fetch(url, {
+                    headers: { 'Authorization': `token ${config.token}` }
+                });
+                const getRes = await getReq.json();
+                const sha = getRes.sha;
+
+                // 2. Put Update
+                const putReq = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${config.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `Update from Installment Manager ${new Date().toISOString()}`,
+                        content: content,
+                        sha: sha
+                    })
+                });
+
+                if (putReq.ok) {
+                    log("☁️ SUCCESS: Published to GitHub!");
+                } else {
+                    const err = await putReq.json();
+                    log(`❌ GITHUB ERROR: ${err.message}`);
+                }
+            } catch (e) {
+                log(`❌ PUBLISH FAILED: ${e.message}`);
+            }
+        }
+
+        // --- CONSOLE ---
         const devToggle = document.getElementById('dev-console-toggle');
         const devContainer = document.getElementById('dev-console-container');
-        devToggle.addEventListener('change', (e) => {
-            devContainer.style.display = e.target.checked ? 'block' : 'none';
-        });
+        
+        if (devToggle) {
+            devToggle.addEventListener('change', (e) => {
+                if (devContainer) devContainer.style.display = e.target.checked ? 'block' : 'none';
+            });
+        }
 
-        // Copy Log
-        document.getElementById('btn-copy-log').addEventListener('click', () => {
-            const text = document.getElementById('dev-console-output').textContent;
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text)
-                    .then(() => alert("Log copied!"))
-                    .catch(() => legacyCopy(text));
-            } else {
-                legacyCopy(text);
-            }
-        });
+        const copyBtn = document.getElementById('btn-copy-log');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => {
+                const text = document.getElementById('dev-console-output').textContent;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text)
+                        .then(() => alert("Log copied!"))
+                        .catch(() => legacyCopy(text));
+                } else {
+                    legacyCopy(text);
+                }
+            });
+        }
+
         function legacyCopy(text) {
             const ta = document.createElement('textarea'); ta.value = text;
             ta.style.position = 'fixed'; ta.style.opacity = 0; document.body.appendChild(ta);
@@ -475,20 +605,23 @@
             'cb-tmo-red': 'c-tmo-red', 'cb-tmo-dp': 'c-tmo-dp', 'cb-tmo-mo': 'c-tmo-mo', 'cb-tmo-tot': 'c-tmo-tot'
         };
 
-        // Master Toggles
         ['att', 'vzw', 'tmo'].forEach(carrier => {
-            document.getElementById(`m-${carrier}`).addEventListener('change', (e) => {
-                const isChecked = e.target.checked;
-                document.querySelectorAll(`input[data-group="${carrier}"]`).forEach(cb => {
-                    cb.checked = isChecked;
-                    toggleCol(colMap[cb.id], isChecked);
+            const master = document.getElementById(`m-${carrier}`);
+            if (master) {
+                master.addEventListener('change', (e) => {
+                    const isChecked = e.target.checked;
+                    document.querySelectorAll(`input[data-group="${carrier}"]`).forEach(cb => {
+                        cb.checked = isChecked;
+                        toggleCol(colMap[cb.id], isChecked);
+                    });
+                    renderTable(); 
                 });
-                renderTable(); // Re-render for compatibility logic
-            });
+            }
         });
 
         Object.keys(colMap).forEach(id => {
-            document.getElementById(id).addEventListener('change', (e) => toggleCol(colMap[id], e.target.checked));
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('change', (e) => toggleCol(colMap[id], e.target.checked));
         });
 
         function toggleCol(className, isVisible) {
@@ -496,7 +629,7 @@
             cells.forEach(c => c.classList.toggle('hide-col', !isVisible));
         }
 
-        incompatibleToggle.addEventListener('change', renderTable);
+        if (incompatibleToggle) incompatibleToggle.addEventListener('change', renderTable);
 
         // --- MATH ---
         const roundMo = (n) => Math.round((parseFloat(n)||0)*100)/100;
@@ -534,6 +667,7 @@
             document.getElementById('loading-msg').style.display = 'none';
             devicesData = snapshot.val() || {};
             dirtyRows.clear();
+            dirtyCarriers = {}; 
             updateSaveAllButtons();
             renderTable();
         });
@@ -543,10 +677,9 @@
             const term = searchBar.value.toLowerCase();
             const keys = Object.keys(devicesData).sort((a,b) => (devicesData[a].name||'').localeCompare(devicesData[b].name||''));
             
-            // Compatibility State
-            const showIncompatible = incompatibleToggle.checked;
-            const attVisible = document.getElementById('m-att').checked;
-            const vzwVisible = document.getElementById('m-vzw').checked;
+            const showIncompatible = incompatibleToggle ? incompatibleToggle.checked : false;
+            const attVisible = document.getElementById('m-att') ? document.getElementById('m-att').checked : true;
+            const vzwVisible = document.getElementById('m-vzw') ? document.getElementById('m-vzw').checked : true;
 
             keys.forEach(key => {
                 const d = devicesData[key];
@@ -554,17 +687,16 @@
                 
                 if (term && !nameLower.includes(term)) return;
 
-                // v16: Compatibility Logic
                 const isExcluded = TMO_EXCLUDED.some(regex => regex.test(d.name));
                 let tmoDisabledClass = '';
                 let lockDisabledClass = '';
 
                 if (isExcluded && !showIncompatible) {
                     if (!attVisible && !vzwVisible) {
-                        return; // Hide row if only TMO selected & incompatible
+                        return; 
                     }
-                    tmoDisabledClass = 'input-disabled'; // Gray out TMO fields
-                    lockDisabledClass = 'disabled'; // Disable lock button
+                    tmoDisabledClass = 'input-disabled'; 
+                    lockDisabledClass = 'disabled'; 
                 }
 
                 const getTs = (c) => c?.last_updated || d.last_updated;
@@ -577,7 +709,6 @@
                 const redVal = tmoTot ? calcTmo_Red(tmoTot) : '';
                 const val = (v) => (v === 0 || v === "0" || !v) ? "" : v;
 
-                // Lock Icons HTML
                 const lockIcon = `<div class="btn-lock ${lockDisabledClass}" title="Toggle Lock"><i class="fas fa-lock-open"></i></div>`;
 
                 row.innerHTML = `
@@ -628,7 +759,6 @@
                     </td>
                 `;
 
-                // Logic setup
                 const activate = () => {
                     document.querySelectorAll('tr.active').forEach(r => r !== row && r.classList.remove('active'));
                     row.classList.add('active');
@@ -646,8 +776,15 @@
             });
             
             Object.keys(colMap).forEach(id => {
-                toggleCol(colMap[id], document.getElementById(id).checked);
+                const cb = document.getElementById(id);
+                if(cb) toggleCol(colMap[id], cb.checked);
             });
+        }
+
+        // v19 Helper: Mark carrier dirty
+        function markCarrierDirty(key, carrier) {
+            if (!dirtyCarriers[key]) dirtyCarriers[key] = { att: false, vzw: false, tmo: false };
+            dirtyCarriers[key][carrier] = true;
         }
 
         function attachRowListeners(row, key) {
@@ -656,12 +793,13 @@
             const delBtn = row.querySelector('.btn-del-row');
             const locks = row.querySelectorAll('.btn-lock');
 
-            // Lock Toggle Logic
             locks.forEach(lock => {
                 lock.addEventListener('click', (e) => {
                     e.stopPropagation();
                     if (lock.classList.contains('disabled')) return;
                     lock.classList.toggle('locked');
+                    
+                    // v20 Fix: Swap Icon Class
                     const icon = lock.querySelector('i');
                     if (lock.classList.contains('locked')) {
                         icon.classList.remove('fa-lock-open');
@@ -670,17 +808,32 @@
                         icon.classList.remove('fa-lock');
                         icon.classList.add('fa-lock-open');
                     }
-                    validateRow(row); // Re-validate on lock change
+
+                    validateRow(row);
+                    markCarrierDirty(key, 'tmo');
+                    dirtyRows.add(key);
+                    updateSaveAllButtons();
                 });
             });
 
             inputs.forEach(inp => {
+                inp.addEventListener('focus', (e) => {
+                    if (inp.closest('.group-att')) markCarrierDirty(key, 'att');
+                    if (inp.closest('.group-vzw')) markCarrierDirty(key, 'vzw');
+                    if (inp.closest('.group-tmo')) markCarrierDirty(key, 'tmo');
+                });
+
                 inp.addEventListener('input', (e) => {
                     if (!dirtyRows.has(key)) log(`✏️ EDIT: Row '${key}' marked dirty.`);
                     dirtyRows.add(key);
-                    updateSaveAllButtons();
                     
                     const t = e.target;
+                    if (t.closest('.group-att')) markCarrierDirty(key, 'att');
+                    if (t.closest('.group-vzw')) markCarrierDirty(key, 'vzw');
+                    if (t.closest('.group-tmo')) markCarrierDirty(key, 'tmo');
+
+                    updateSaveAllButtons();
+                    
                     const getV = (el) => parseFloat(el.value) || 0;
 
                     // Standard ATT/VZW logic
@@ -703,7 +856,12 @@
                 const data = scrapeRowData(row, key);
                 sendRowData(key, data).then(() => {
                     dirtyRows.delete(key);
+                    if (dirtyCarriers[key]) delete dirtyCarriers[key]; 
                     updateSaveAllButtons();
+                    get(ref(db, 'devices')).then(snap => {
+                        const allData = snap.val() || {};
+                        publishToGitHub(allData);
+                    });
                 });
             });
 
@@ -712,18 +870,15 @@
                 if (confirm('Delete?')) remove(ref(db, 'devices/'+key));
             });
             
-            // Initial Validation
             validateRow(row);
         }
 
-        // v16 Solver Engine
         function solveTmoRow(row, triggerInput) {
             const redIn = row.querySelector('.i-tmo-red');
             const dpIn = row.querySelector('.i-tmo-dp');
             const moIn = row.querySelector('.i-tmo-mo');
             const totIn = row.querySelector('.i-tmo-tot');
 
-            // Check Locks
             const isLocked = (el) => el.parentElement.querySelector('.btn-lock').classList.contains('locked');
             const redL = isLocked(redIn);
             const dpL = isLocked(dpIn);
@@ -732,11 +887,9 @@
 
             const getV = (el) => parseFloat(el.value) || 0;
 
-            // Trigger: RED
             if (triggerInput === redIn) {
                 const val = parseFloat(redIn.value) || 0;
                 if (!totL) totIn.value = val ? calcTmo_TotFromRed(val) : '';
-                // Now behave as if Total changed
                 if (!dpL && !moL) { dpIn.value = ''; moIn.value = ''; }
                 else if (dpL && !moL) {
                     const tot = getV(totIn); const dp = getV(dpIn);
@@ -748,11 +901,9 @@
                 }
             }
 
-            // Trigger: TOTAL
             if (triggerInput === totIn) {
                 const val = parseFloat(totIn.value) || 0;
                 if (!redL) redIn.value = val ? calcTmo_Red(val) : '';
-                
                 if (!dpL && !moL) { dpIn.value = ''; moIn.value = ''; }
                 else if (dpL && !moL) {
                     const dp = getV(dpIn);
@@ -764,50 +915,46 @@
                 }
             }
 
-            // Trigger: DP
             if (triggerInput === dpIn) {
                 const dp = parseFloat(dpIn.value) || 0;
                 const mo = getV(moIn);
                 const tot = getV(totIn);
                 
-                if (totL) { // Total is Anchor/Locked
+                if (totL) { 
                     if (!moL) moIn.value = tot > 0 ? ((tot - dp) / 24).toFixed(2) : '';
-                } else if (moL) { // Mo is Locked -> Calc Total
+                } else if (moL) { 
                     const newTot = dp + (mo * 24);
                     totIn.value = newTot;
                     if (!redL) redIn.value = calcTmo_Red(newTot);
                 } else {
-                    // Both Unlocked (v15 Logic)
-                    if (mo > 0) { // Forward
+                    if (mo > 0) { 
                         const newTot = calcTmo_Tot(mo, dp);
                         totIn.value = newTot;
                         if (!redL) redIn.value = calcTmo_Red(newTot);
-                    } else if (tot > 0) { // Backward
+                    } else if (tot > 0) { 
                         const newMo = calcTmo_Mo(tot, dp);
                         moIn.value = newMo > 0 ? newMo : '';
                     }
                 }
             }
 
-            // Trigger: MO
             if (triggerInput === moIn) {
                 const mo = parseFloat(moIn.value) || 0;
                 const dp = getV(dpIn);
                 const tot = getV(totIn);
 
-                if (totL) { // Total is Anchor/Locked
+                if (totL) { 
                     if (!dpL) dpIn.value = tot > 0 ? (tot - (mo * 24)).toFixed(2) : '';
-                } else if (dpL) { // DP is Locked -> Calc Total
+                } else if (dpL) { 
                     const newTot = dp + (mo * 24);
                     totIn.value = newTot;
                     if (!redL) redIn.value = calcTmo_Red(newTot);
                 } else {
-                    // Both Unlocked (v15 Logic)
-                    if (dp > 0) { // Forward
+                    if (dp > 0) { 
                         const newTot = calcTmo_Tot(mo, dp);
                         totIn.value = newTot;
                         if (!redL) redIn.value = calcTmo_Red(newTot);
-                    } else if (tot > 0) { // Backward
+                    } else if (tot > 0) { 
                         const newDp = tot - (mo * 24);
                         dpIn.value = newDp > 0 ? Math.round(newDp * 100) / 100 : '';
                     }
@@ -825,9 +972,7 @@
 
             if (tot === 0) { warnIcon.classList.remove('visible'); return; }
 
-            // Check 1: Total vs Red
             const redCheck = Math.abs(tot - (red * 24)) > 0.24; // v17 Tolerance
-            // Check 2: Total vs Parts (Only if parts exist)
             let partsCheck = false;
             if (dp > 0 || mo > 0) {
                  partsCheck = Math.abs(tot - (dp + (mo * 24))) > 0.24; // v17 Tolerance
@@ -840,30 +985,31 @@
             }
         }
 
-        // Helper: Read DOM to get data (Sync)
         function scrapeRowData(row, key) {
+            const orig = JSON.parse(row.dataset.original);
             const getVal = (sel) => parseFloat(row.querySelector(sel).value) || 0;
             const getName = () => row.querySelector('.input-name').value;
             const now = Date.now();
+            
+            const flags = dirtyCarriers[key] || { att: false, vzw: false, tmo: false };
 
             return {
                 name: getName(),
                 att: { 
                     monthly: getVal('.i-att-mo'), total: getVal('.i-att-tot'),
-                    last_updated: now 
+                    last_updated: flags.att ? now : (orig.att?.last_updated || now)
                 },
                 vzw: { 
                     monthly: getVal('.i-vzw-mo'), total: getVal('.i-vzw-tot'),
-                    last_updated: now 
+                    last_updated: flags.vzw ? now : (orig.vzw?.last_updated || now)
                 },
                 tmo: { 
                     dp: getVal('.i-tmo-dp'), monthly: getVal('.i-tmo-mo'), total: getVal('.i-tmo-tot'),
-                    last_updated: now 
+                    last_updated: flags.tmo ? now : (orig.tmo?.last_updated || now)
                 }
             };
         }
 
-        // Helper: Send data to Firebase (Async)
         function sendRowData(key, data) {
             log(`⬆️ SENDING: Update for ${data.name} (${key})...`);
             return update(ref(db, 'devices/'+key), data)
@@ -892,16 +1038,21 @@
             });
             const promises = updates.map(item => sendRowData(item.key, item.data));
             Promise.all(promises).then(() => {
-                log('✅ BULK SAVE COMPLETE.');
+                log('✅ FIREBASE SYNC COMPLETE.');
+                
+                const allData = devicesData; 
+                publishToGitHub(allData);
+
                 dirtyRows.clear();
+                dirtyCarriers = {}; 
                 isSaving = false; 
                 updateSaveAllButtons();
                 renderTable(); 
             });
         };
 
-        btnSaveTop.addEventListener('click', handleBulkSave);
-        btnSaveBottom.addEventListener('click', handleBulkSave);
+        if (btnSaveTop) btnSaveTop.addEventListener('click', handleBulkSave);
+        if (btnSaveBottom) btnSaveBottom.addEventListener('click', handleBulkSave);
 
         // Add New Logic
         const addRow = document.getElementById('add-row');

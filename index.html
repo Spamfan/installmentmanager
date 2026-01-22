@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Installment Manager (Beta v20.1)</title>
+    <title>Installment Manager (Beta v21)</title>
     
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -18,23 +18,97 @@
             font-size: 13px;
         }
 
+        /* --- LOGIN VIEW STYLES --- */
+        #login-view {
+            max-width: 400px;
+            margin: 50px auto;
+            background: white;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        
+        .login-icon {
+            width: 64px;
+            height: 64px;
+            fill: #d93025; /* Red warning color */
+            margin-bottom: 20px;
+        }
+
+        .login-version {
+            font-weight: bold;
+            color: #606770;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .login-warning {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+            margin-bottom: 25px;
+        }
+
+        #pin-input {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            letter-spacing: 5px;
+            box-sizing: border-box;
+        }
+        
+        #btn-enter {
+            width: 100%;
+            padding: 12px;
+            background-color: #1877f2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        #btn-enter:hover { background-color: #166fe5; }
+
+        #pin-error {
+            color: #d93025;
+            margin-top: 15px;
+            font-weight: bold;
+            display: none;
+        }
+
+        /* --- APP VIEW STYLES --- */
         h1 {
             text-align: center;
             margin-bottom: 15px;
             font-weight: 800;
             letter-spacing: -0.5px;
-            position: relative;
+            /* position: relative; Removed for v21 fixed button */
         }
 
+        /* v21: Fixed Position Settings Gear */
         #btn-settings {
-            position: absolute;
-            right: 0;
-            top: 0;
-            background: none;
-            border: none;
+            position: fixed;
+            right: 15px;
+            top: 15px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
             font-size: 18px;
             color: #606770;
             cursor: pointer;
+            z-index: 2000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         #btn-settings:hover { color: #1877f2; }
 
@@ -282,7 +356,8 @@
         /* Settings Modal */
         #settings-modal {
             display: none;
-            position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
+            position: fixed; z-index: 3000; /* Higher than gear */
+            left: 0; top: 0; width: 100%; height: 100%;
             background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center;
         }
         .modal-content {
@@ -302,142 +377,160 @@
 </head>
 <body>
 
-    <h1>
-        Installment Manager (Beta v20.1)
-        <button id="btn-settings" title="Cloud Settings"><i class="fas fa-cog"></i></button>
-    </h1>
-
-    <div id="container">
-        
-        <!-- Filter Bar -->
-        <div id="filter-bar">
-            <!-- TMO Incompatible Toggle -->
-            <div class="filter-section" style="border-right: 2px solid #000;">
-                <label class="filter-label" style="font-weight:bold; color:#d93025;">
-                    <input type="checkbox" id="cb-incompatible"> Edit and show incompatible items
-                </label>
-            </div>
-
-            <!-- ATT Group -->
-            <div class="filter-section">
-                <label class="filter-master"><input type="checkbox" id="m-att" checked> AT&T</label>
-                <div class="filter-subs">
-                    <label class="filter-label"><input type="checkbox" id="cb-att-mo" data-group="att" checked> Mo</label>
-                    <label class="filter-label"><input type="checkbox" id="cb-att-tot" data-group="att" checked> Total</label>
-                </div>
-            </div>
-            <!-- VZW Group -->
-            <div class="filter-section">
-                <label class="filter-master"><input type="checkbox" id="m-vzw" checked> Verizon</label>
-                <div class="filter-subs">
-                    <label class="filter-label"><input type="checkbox" id="cb-vzw-mo" data-group="vzw" checked> Mo</label>
-                    <label class="filter-label"><input type="checkbox" id="cb-vzw-tot" data-group="vzw" checked> Total</label>
-                </div>
-            </div>
-            <!-- TMO Group -->
-            <div class="filter-section">
-                <label class="filter-master"><input type="checkbox" id="m-tmo" checked> T-Mobile</label>
-                <div class="filter-subs">
-                    <label class="filter-label"><input type="checkbox" id="cb-tmo-red" data-group="tmo" checked style="color:#d93025; font-weight:bold;"> NO DP</label>
-                    <label class="filter-label"><input type="checkbox" id="cb-tmo-dp" data-group="tmo"> DP</label>
-                    <label class="filter-label"><input type="checkbox" id="cb-tmo-mo" data-group="tmo"> Mo</label>
-                    <label class="filter-label"><input type="checkbox" id="cb-tmo-tot" data-group="tmo" checked> Total</label>
-                </div>
-            </div>
-        </div>
-
-        <!-- Top Controls -->
-        <div class="controls-row">
-            <input type="text" id="search-bar" placeholder="Search devices...">
-            <button class="btn-save-all" id="btn-save-top">Save All Changes</button>
-        </div>
-
-        <div class="table-wrapper">
-            <table id="main-table">
-                <thead>
-                    <tr>
-                        <th class="col-name">Device</th>
-                        
-                        <!-- ATT Headers -->
-                        <th class="group-att c-att-mo">$/mo</th>
-                        <th class="group-att c-att-tot">Total</th>
-                        
-                        <!-- VZW Headers -->
-                        <th class="group-vzw c-vzw-mo">$/mo</th>
-                        <th class="group-vzw c-vzw-tot">Total</th>
-                        
-                        <!-- TMO Headers -->
-                        <th class="group-tmo c-tmo-red danger-header">MO IF<br>NO DP</th>
-                        <th class="group-tmo c-tmo-dp">Down</th>
-                        <th class="group-tmo c-tmo-mo">Mo<br><span style="font-size:0.7em; font-weight:normal;">(after dp)</span></th>
-                        <th class="group-tmo c-tmo-tot">Total</th>
-                        
-                        <th class="col-actions" style="width: 50px;"></th>
-                    </tr>
-                    
-                    <!-- Add New Row -->
-                    <tr id="add-row">
-                        <td><input type="text" id="new-name" class="input-name" placeholder="New Device Name"></td>
-                        
-                        <td class="c-att-mo group-att"><input type="number" id="new-att-mo" step="0.01"></td>
-                        <td class="c-att-tot group-att"><input type="number" id="new-att-total"></td>
-                        
-                        <td class="c-vzw-mo group-vzw"><input type="number" id="new-vzw-mo" step="0.01"></td>
-                        <td class="c-vzw-tot group-vzw"><input type="number" id="new-vzw-total"></td>
-                        
-                        <td class="c-tmo-red group-tmo"><input type="number" id="new-tmo-red" class="input-danger" step="0.01"></td>
-                        <td class="c-tmo-dp group-tmo"><input type="number" id="new-tmo-dp"></td>
-                        <td class="c-tmo-mo group-tmo"><input type="number" id="new-tmo-mo" step="0.01"></td>
-                        <td class="c-tmo-tot group-tmo"><input type="number" id="new-tmo-total"></td>
-                        
-                        <td style="text-align:center;"><button id="btn-add-device" class="btn-icon" style="color:green;"><i class="fas fa-plus"></i></button></td>
-                    </tr>
-                </thead>
-                <tbody id="device-list">
-                    <!-- Data Rows -->
-                </tbody>
-            </table>
-            <div id="loading-msg" style="text-align:center; padding:20px; color:#666;">Connecting...</div>
-        </div>
-
-        <!-- Bottom Controls -->
-        <div class="sticky-footer">
-            <button class="btn-save-all" id="btn-save-bottom">Save All Changes</button>
-        </div>
-
-        <!-- Developer Console (Restored v20.1) -->
-        <div id="dev-console-wrapper">
-            <label><input type="checkbox" id="dev-console-toggle"> Show Developer Console</label>
-            <div id="dev-console-container">
-                <pre id="dev-console-output"></pre>
-                <button class="btn-copy-log" id="btn-copy-log">Copy Log</button>
-            </div>
-        </div>
+    <!-- GATEKEEPER VIEW -->
+    <div id="login-view">
+        <div class="login-version">Installment Manager (Beta v21)</div>
+        <svg class="login-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+        </svg>
+        <p class="login-warning">
+            Enter passcode to access Installment Manager.<br><br>
+            By entering, you understand changes made here will have effects for all platforms that Optimizer uses.
+        </p>
+        <input type="tel" id="pin-input" placeholder="Enter PIN">
+        <button id="btn-enter">Enter</button>
+        <p id="pin-error">Incorrect PIN</p>
     </div>
 
-    <!-- v18 Settings Modal -->
-    <div id="settings-modal">
-        <div class="modal-content">
-            <div class="modal-header">Cloud Publisher Settings</div>
-            <div class="form-group">
-                <label>GitHub Username</label>
-                <input type="text" id="gh-user" placeholder="e.g. spamfan">
+    <!-- APP VIEW (Hidden by default) -->
+    <div id="app-view" style="display: none;">
+        
+        <h1>Installment Manager (Beta v21)</h1>
+        <!-- v21: Fixed position settings button -->
+        <button id="btn-settings" title="Cloud Settings"><i class="fas fa-cog"></i></button>
+
+        <div id="container">
+            
+            <!-- Filter Bar -->
+            <div id="filter-bar">
+                <!-- TMO Incompatible Toggle -->
+                <div class="filter-section" style="border-right: 2px solid #000;">
+                    <label class="filter-label" style="font-weight:bold; color:#d93025;">
+                        <input type="checkbox" id="cb-incompatible"> Edit and show incompatible items
+                    </label>
+                </div>
+
+                <!-- ATT Group -->
+                <div class="filter-section">
+                    <label class="filter-master"><input type="checkbox" id="m-att" checked> AT&T</label>
+                    <div class="filter-subs">
+                        <label class="filter-label"><input type="checkbox" id="cb-att-mo" data-group="att" checked> Mo</label>
+                        <label class="filter-label"><input type="checkbox" id="cb-att-tot" data-group="att" checked> Total</label>
+                    </div>
+                </div>
+                <!-- VZW Group -->
+                <div class="filter-section">
+                    <label class="filter-master"><input type="checkbox" id="m-vzw" checked> Verizon</label>
+                    <div class="filter-subs">
+                        <label class="filter-label"><input type="checkbox" id="cb-vzw-mo" data-group="vzw" checked> Mo</label>
+                        <label class="filter-label"><input type="checkbox" id="cb-vzw-tot" data-group="vzw" checked> Total</label>
+                    </div>
+                </div>
+                <!-- TMO Group -->
+                <div class="filter-section">
+                    <label class="filter-master"><input type="checkbox" id="m-tmo" checked> T-Mobile</label>
+                    <div class="filter-subs">
+                        <label class="filter-label"><input type="checkbox" id="cb-tmo-red" data-group="tmo" checked style="color:#d93025; font-weight:bold;"> NO DP</label>
+                        <label class="filter-label"><input type="checkbox" id="cb-tmo-dp" data-group="tmo"> DP</label>
+                        <label class="filter-label"><input type="checkbox" id="cb-tmo-mo" data-group="tmo"> Mo</label>
+                        <label class="filter-label"><input type="checkbox" id="cb-tmo-tot" data-group="tmo" checked> Total</label>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label>Repository Name</label>
-                <input type="text" id="gh-repo" placeholder="e.g. optimizerunstable">
+
+            <!-- Top Controls -->
+            <div class="controls-row">
+                <input type="text" id="search-bar" placeholder="Search devices...">
+                <button class="btn-save-all" id="btn-save-top">Save All Changes</button>
             </div>
-            <div class="form-group">
-                <label>File Path</label>
-                <input type="text" id="gh-path" value="edlp_data.json" readonly>
+
+            <div class="table-wrapper">
+                <table id="main-table">
+                    <thead>
+                        <tr>
+                            <th class="col-name">Device</th>
+                            
+                            <!-- ATT Headers -->
+                            <th class="group-att c-att-mo">$/mo</th>
+                            <th class="group-att c-att-tot">Total</th>
+                            
+                            <!-- VZW Headers -->
+                            <th class="group-vzw c-vzw-mo">$/mo</th>
+                            <th class="group-vzw c-vzw-tot">Total</th>
+                            
+                            <!-- TMO Headers -->
+                            <th class="group-tmo c-tmo-red danger-header">MO IF<br>NO DP</th>
+                            <th class="group-tmo c-tmo-dp">Down</th>
+                            <th class="group-tmo c-tmo-mo">Mo<br><span style="font-size:0.7em; font-weight:normal;">(after dp)</span></th>
+                            <th class="group-tmo c-tmo-tot">Total</th>
+                            
+                            <th class="col-actions" style="width: 50px;"></th>
+                        </tr>
+                        
+                        <!-- Add New Row -->
+                        <tr id="add-row">
+                            <td><input type="text" id="new-name" class="input-name" placeholder="New Device Name"></td>
+                            
+                            <td class="c-att-mo group-att"><input type="number" id="new-att-mo" step="0.01"></td>
+                            <td class="c-att-tot group-att"><input type="number" id="new-att-total"></td>
+                            
+                            <td class="c-vzw-mo group-vzw"><input type="number" id="new-vzw-mo" step="0.01"></td>
+                            <td class="c-vzw-tot group-vzw"><input type="number" id="new-vzw-total"></td>
+                            
+                            <td class="c-tmo-red group-tmo"><input type="number" id="new-tmo-red" class="input-danger" step="0.01"></td>
+                            <td class="c-tmo-dp group-tmo"><input type="number" id="new-tmo-dp"></td>
+                            <td class="c-tmo-mo group-tmo"><input type="number" id="new-tmo-mo" step="0.01"></td>
+                            <td class="c-tmo-tot group-tmo"><input type="number" id="new-tmo-total"></td>
+                            
+                            <td style="text-align:center;"><button id="btn-add-device" class="btn-icon" style="color:green;"><i class="fas fa-plus"></i></button></td>
+                        </tr>
+                    </thead>
+                    <tbody id="device-list">
+                        <!-- Data Rows -->
+                    </tbody>
+                </table>
+                <div id="loading-msg" style="text-align:center; padding:20px; color:#666;">Connecting...</div>
             </div>
-            <div class="form-group">
-                <label>Personal Access Token (PAT)</label>
-                <input type="password" id="gh-token" placeholder="ghp_...">
+
+            <!-- Bottom Controls -->
+            <div class="sticky-footer">
+                <button class="btn-save-all" id="btn-save-bottom">Save All Changes</button>
             </div>
-            <div class="modal-actions">
-                <button class="btn-modal btn-cancel" id="btn-close-settings">Close</button>
-                <button class="btn-modal btn-save-settings" id="btn-save-gh">Save Credentials</button>
+
+            <!-- Developer Console (Restored v20.1) -->
+            <div id="dev-console-wrapper">
+                <label><input type="checkbox" id="dev-console-toggle"> Show Developer Console</label>
+                <div id="dev-console-container">
+                    <pre id="dev-console-output"></pre>
+                    <button class="btn-copy-log" id="btn-copy-log">Copy Log</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- v18 Settings Modal -->
+        <div id="settings-modal">
+            <div class="modal-content">
+                <div class="modal-header">Cloud Publisher Settings</div>
+                <div class="form-group">
+                    <label>GitHub Username</label>
+                    <input type="text" id="gh-user" placeholder="e.g. spamfan">
+                </div>
+                <div class="form-group">
+                    <label>Repository Name</label>
+                    <input type="text" id="gh-repo" placeholder="e.g. optimizerunstable">
+                </div>
+                <div class="form-group">
+                    <label>File Path</label>
+                    <input type="text" id="gh-path" value="edlp_data.json" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Personal Access Token (PAT)</label>
+                    <input type="password" id="gh-token" placeholder="ghp_...">
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-modal btn-cancel" id="btn-close-settings">Close</button>
+                    <button class="btn-modal btn-save-settings" id="btn-save-gh">Save Credentials</button>
+                </div>
             </div>
         </div>
     </div>
@@ -446,6 +539,30 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, set, remove, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // --- GATEKEEPER LOGIC (v21) ---
+        const PIN_CODE = "102030";
+        const pinInput = document.getElementById('pin-input');
+        const btnEnter = document.getElementById('btn-enter');
+        const pinError = document.getElementById('pin-error');
+        const loginView = document.getElementById('login-view');
+        const appView = document.getElementById('app-view');
+
+        const checkPin = () => {
+            if (pinInput.value === PIN_CODE) {
+                loginView.style.display = 'none';
+                appView.style.display = 'block';
+            } else {
+                pinError.style.display = 'block';
+                pinInput.value = '';
+                pinInput.focus();
+            }
+        };
+
+        btnEnter.addEventListener('click', checkPin);
+        pinInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') checkPin();
+        });
 
         // --- LOGGER ---
         function log(msg) {
@@ -1036,7 +1153,7 @@
                     updates.push({ key, data });
                 }
             });
-            const promises = updates.map(item => sendRowData(item.key, item.data));
+            const promises = map(item => sendRowData(item.key, item.data));
             Promise.all(promises).then(() => {
                 log('✅ FIREBASE SYNC COMPLETE.');
                 

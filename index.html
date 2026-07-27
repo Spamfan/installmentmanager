@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Installment Manager (Beta v21)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Installment Manager (v0.0.1)</title>
     
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -18,8 +18,15 @@
             font-size: 13px;
         }
 
+        @media (max-width: 600px) {
+            body {
+                padding: 5px;
+            }
+        }
+
         /* --- LOGIN VIEW STYLES --- */
         #login-view {
+            width: 90%;
             max-width: 400px;
             margin: 50px auto;
             background: white;
@@ -27,6 +34,7 @@
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             text-align: center;
+            box-sizing: border-box;
         }
         
         .login-icon {
@@ -52,26 +60,28 @@
 
         #pin-input {
             width: 100%;
-            padding: 12px;
-            font-size: 18px;
+            padding: 15px;
+            font-size: 1.2rem;
             text-align: center;
-            border: 2px solid #ddd;
-            border-radius: 6px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
             margin-bottom: 15px;
             letter-spacing: 5px;
             box-sizing: border-box;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         
         #btn-enter {
             width: 100%;
-            padding: 12px;
+            padding: 15px;
             background-color: #1877f2;
             color: white;
             border: none;
-            border-radius: 6px;
-            font-size: 16px;
+            border-radius: 8px;
+            font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         #btn-enter:hover { background-color: #166fe5; }
 
@@ -113,8 +123,9 @@
         #btn-settings:hover { color: #1877f2; }
 
         #container {
-            width: fit-content;
-            min-width: 900px;
+            width: 100%;
+            max-width: 1200px;
+            box-sizing: border-box;
             margin: 0 auto;
             background: white;
             padding: 15px;
@@ -134,7 +145,15 @@
             border: 1px solid #ccc;
             flex-wrap: nowrap;
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
             justify-content: flex-start;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            box-sizing: border-box;
         }
         
         .filter-section {
@@ -379,7 +398,7 @@
 
     <!-- GATEKEEPER VIEW -->
     <div id="login-view">
-        <div class="login-version">Installment Manager (Beta v21)</div>
+        <div class="login-version">Installment Manager (v0.0.1)</div>
         <svg class="login-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
         </svg>
@@ -387,7 +406,7 @@
             Enter passcode to access Installment Manager.<br><br>
             By entering, you understand changes made here will have effects for all platforms that Optimizer uses.
         </p>
-        <input type="tel" id="pin-input" placeholder="Enter PIN">
+        <input type="number" pattern="[0-9]*" inputmode="numeric" id="pin-input" placeholder="Enter PIN" style="-webkit-text-security: disc;">
         <button id="btn-enter">Enter</button>
         <p id="pin-error">Incorrect PIN</p>
     </div>
@@ -395,7 +414,7 @@
     <!-- APP VIEW (Hidden by default) -->
     <div id="app-view" style="display: none;">
         
-        <h1>Installment Manager (Beta v21)</h1>
+        <h1>Installment Manager (v0.0.1)</h1>
         <!-- v21: Fixed position settings button -->
         <button id="btn-settings" title="Cloud Settings"><i class="fas fa-cog"></i></button>
 
@@ -541,7 +560,7 @@
         import { getDatabase, ref, onValue, set, remove, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         // --- GATEKEEPER LOGIC (v21) ---
-        const PIN_CODE = "1999102030";
+        const PIN_CODE = atob('MTk5OTEwMjAzMA==');
         const pinInput = document.getElementById('pin-input');
         const btnEnter = document.getElementById('btn-enter');
         const pinError = document.getElementById('pin-error');

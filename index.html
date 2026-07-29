@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Installment Manager (v0.0.1)</title>
+    <title>Installment Manager (v0.0.2)</title>
     
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -398,7 +398,7 @@
 
     <!-- GATEKEEPER VIEW -->
     <div id="login-view">
-        <div class="login-version">Installment Manager (v0.0.1)</div>
+        <div class="login-version">Installment Manager (v0.0.2)</div>
         <svg class="login-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
         </svg>
@@ -414,7 +414,7 @@
     <!-- APP VIEW (Hidden by default) -->
     <div id="app-view" style="display: none;">
         
-        <h1>Installment Manager (v0.0.1)</h1>
+        <h1>Installment Manager (v0.0.2)</h1>
         <!-- v21: Fixed position settings button -->
         <button id="btn-settings" title="Cloud Settings"><i class="fas fa-cog"></i></button>
 
@@ -669,17 +669,59 @@
             }
 
             const url = `https://api.github.com/repos/${config.user}/${config.repo}/contents/edlp_data.json`;
-            const content = btoa(JSON.stringify({ devices: data }, null, 2)); 
             
             try {
-                // 1. Get SHA
+                // 1. Get SHA & Current Content
                 const getReq = await fetch(url, {
                     headers: { 'Authorization': `token ${config.token}` }
                 });
                 const getRes = await getReq.json();
                 const sha = getRes.sha;
+                
+                let existingCloudData = { devices: {} };
+                if (getRes.content) {
+                    try {
+                        // GitHub returns Base64 with newlines, replace removes them for safe decoding
+                        existingCloudData = JSON.parse(decodeURIComponent(escape(atob(getRes.content.replace(/\n/g, '')))));
+                    } catch (err) {
+                        log("⚠️ WARN: Could not parse existing GitHub data. Starting fresh.");
+                    }
+                }
 
-                // 2. Put Update
+                // 2. Smart Merge
+                let mergedData = { ...existingCloudData };
+                let mergedDevices = {};
+
+                // A. Loop through incoming Firebase data (Update prices, preserve tags)
+                for (const key in data) {
+                    mergedDevices[key] = { ...data[key] }; // Copy Firebase data
+                    
+                    // Preserve cloud-only tags if they exist
+                    if (existingCloudData.devices && existingCloudData.devices[key]) {
+                        if (existingCloudData.devices[key].abbr) {
+                            mergedDevices[key].abbr = existingCloudData.devices[key].abbr;
+                        }
+                        if (existingCloudData.devices[key].is_ghost) {
+                            mergedDevices[key].is_ghost = existingCloudData.devices[key].is_ghost;
+                        }
+                    }
+                }
+
+                // B. Loop through Cloud data to preserve Ghosts that aren't in Firebase
+                if (existingCloudData.devices) {
+                    for (const key in existingCloudData.devices) {
+                        if (existingCloudData.devices[key].is_ghost && !mergedDevices[key]) {
+                            mergedDevices[key] = existingCloudData.devices[key];
+                        }
+                    }
+                }
+
+                mergedData.devices = mergedDevices;
+                
+                // 3. Encode & Put Update
+                const jsonString = JSON.stringify(mergedData, null, 2);
+                const encodedContent = btoa(unescape(encodeURIComponent(jsonString)));
+
                 const putReq = await fetch(url, {
                     method: 'PUT',
                     headers: {
@@ -688,7 +730,7 @@
                     },
                     body: JSON.stringify({
                         message: `Update from Installment Manager ${new Date().toISOString()}`,
-                        content: content,
+                        content: encodedContent,
                         sha: sha
                     })
                 });
